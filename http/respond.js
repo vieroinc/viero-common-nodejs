@@ -26,8 +26,8 @@ const respond = (res, code, payload) => {
   res.statusCode = code;
   if (payload && isObject(payload) && !isBuffer(payload)) {
     payload = JSON.stringify(payload);
-    res.setHeader("Content-Type", "application/json; charset=utf-8");
-    res.setHeader("Content-Length", Buffer.byteLength(payload));
+    res.setHeader("content-type", "application/json; charset=utf-8");
+    res.setHeader("content-length", Buffer.byteLength(payload));
   }
   res.end(payload, "utf8");
 };

@@ -18,7 +18,7 @@ const { jsonBody, formBody } = require('../../../utils/stream');
 
 const readBody = (req) => {
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
-    switch (req.headers["Content-Type"]) {
+    switch (req.headers["content-type"]) {
       case 'application/json': return jsonBody(req);
       case 'application/x-www-form-urlencoded': return formBody(req);
     }
