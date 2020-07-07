@@ -34,7 +34,7 @@ const setCORSHeadersIfNeeded = (req, res, corsOptions) => {
   try {
     const hostname = new URL(from).hostname;
     if (corsOptions.origins.some((origin) => -1 < origin.indexOf(hostname))) { // TODO: seq read
-      res.setHeader("Access-Control-Allow-Origin", `${origin}`);
+      res.setHeader("Access-Control-Allow-Origin", `${from}`);
       res.setHeader("Access-Control-Allow-Methods", ['OPTIONS', ...methods()].join(', '));
       if (corsOptions.headers) {
         res.setHeader("Access-Control-Allow-Headers", corsOptions.headers.join(", "));
