@@ -26,14 +26,14 @@ const setCORSHeadersIfNeeded = (req, res, corsOptions) => {
   if (!corsOptions || !corsOptions.origins) {
     return;
   }
-  const origin = req.headers.origin || req.headers.referer;
-  if (!origin) {
+  const from = req.headers.origin || req.headers.referer;
+  if (!from) {
     return;
   }
 
   try {
-    const hostname = new URL(origin).hostname;
-    if (corsOptions.origins.some((origin) => -1 < hostname.indexOf(origin))) { // TODO: seq read
+    const hostname = new URL(from).hostname;
+    if (corsOptions.origins.some((origin) => -1 < origin.indexOf(hostname))) { // TODO: seq read
       res.setHeader("Access-Control-Allow-Origin", `${origin}`);
       res.setHeader("Access-Control-Allow-Methods", ['OPTIONS', ...methods()].join(', '));
       if (corsOptions.headers) {
@@ -75,9 +75,9 @@ const entryFilter = (corsOptions, params, chain) => {
   if ('OTIONS' === req.method) {
     return respondOk(res);
   }
-  const registeredMethods = methods();
+  const registeredMethods = ['OPTIONS', ...methods()];
   if (!registeredMethods.includes(req.method)) {
-    res.setHeader("Allow", ['OPTIONS', ...registeredMethods].join(', '));
+    res.setHeader("Allow", registeredMethods.join(', '));
     return respondError(res, http405());
   }
 
