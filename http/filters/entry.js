@@ -63,7 +63,9 @@ const entryFilter = (corsOptions, params, chain) => {
     params.remoteAddress = req.connection.remoteAddress;
   }
 
-  setCORSHeadersIfNeeded(params.req, params.res, corsOptions);
+  if (corsOptions) {
+    setCORSHeadersIfNeeded(params.req, params.res, corsOptions);
+  }
 
   if ('OTIONS' === req.method) {
     return respondOk(res);
