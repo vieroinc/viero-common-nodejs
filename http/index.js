@@ -29,15 +29,30 @@ const filters = [];
 
 class VieroHTTP {
 
+  constructor() {
+    this._server = http.createServer((req, res) => {
+      new FilterChain(req, res, [
+        entryFilter.bind(null, this._corsOptions),
+        routerParserFilter,
+        ...filters,
+        actionFilter,
+        giveUpFilter
+      ]).next()
+    });
+    this._server.on('error', (err) => reject(new VieroError('/http', 732561, { [VieroError.KEY.ERROR]: err })));
+  }
+
+  get httpServer() {
+    return this._server;
+  }
+
   /**
    * Starts the server.
    */
   run({ host, port } = {}) {
     port = port || 80;
     host = host || '::';
-    this._server = http.createServer((req, res) => new FilterChain(req, res, [entryFilter.bind(null, this._corsOptions), routerParserFilter, ...filters, actionFilter, giveUpFilter]).next());
     return new Promise((resolve, reject) => {
-      this._server.on('error', (err) => reject(new VieroError('VieroHTTP', 732561, { [VieroError.KEY.ERROR]: err })));
       this._server.listen(port, host, () => {
         if (log.isDebug()) {
           log.debug(`VieroHTTP server is listening on ${host}:${port}`);
@@ -54,7 +69,7 @@ class VieroHTTP {
     return new Promise((resolve, reject) => {
       this._server.close((err) => {
         if (err) {
-          return reject(new VieroError('VieroHTTP', 732562, { [VieroError.KEY.ERROR]: err }));
+          return reject(new VieroError('/http', 732562, { [VieroError.KEY.ERROR]: err }));
         }
         if (log.isDebug()) {
           log.debug('VieroHTTP server is stopped listening.');

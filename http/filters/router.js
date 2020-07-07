@@ -32,10 +32,10 @@ const runAction = (action) => {
 
 const registerRoute = (method, path, cb) => {
   if (!!!method || !!!path || !!!cb) {
-    throw new VieroError('registerRoute', 887375);
+    throw new VieroError('/http/filters/registerRoute', 887375);
   }
   if (!path.startsWith("/")) {
-    throw new VieroError('registerRoute', 887376);
+    throw new VieroError('/http/filters/registerRoute', 887376);
   }
   const methodUpperCase = method.toUpperCase();
   if (!registry[methodUpperCase]) {

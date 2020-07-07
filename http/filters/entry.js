@@ -23,6 +23,9 @@ const { respondError, respondOk } = require('../respond');
 const { methods } = require('./router');
 
 const setCORSHeadersIfNeeded = (req, res, corsOptions) => {
+  if (!corsOptions || !corsOptions.origins) {
+    return;
+  }
   const origin = req.headers.origin || req.headers.referer;
   if (!origin) {
     return;
@@ -33,8 +36,12 @@ const setCORSHeadersIfNeeded = (req, res, corsOptions) => {
     if (corsOptions.origins.some((origin) => -1 < hostname.indexOf(origin))) { // TODO: seq read
       res.setHeader("Access-Control-Allow-Origin", `${origin}`);
       res.setHeader("Access-Control-Allow-Methods", ['OPTIONS', ...methods()].join(', '));
-      res.setHeader("Access-Control-Allow-Headers", corsOptions.headers.join(", "));
-      res.setHeader("Access-Control-Allow-Credentials", corsOptions.allowCredentials ? 'true' : 'false');
+      if (corsOptions.headers) {
+        res.setHeader("Access-Control-Allow-Headers", corsOptions.headers.join(", "));
+      }
+      if (corsOptions.allowCredentials) {
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+      }
     }
   } catch (e) { }
 };
@@ -63,9 +70,7 @@ const entryFilter = (corsOptions, params, chain) => {
     params.remoteAddress = req.connection.remoteAddress;
   }
 
-  if (corsOptions) {
-    setCORSHeadersIfNeeded(params.req, params.res, corsOptions);
-  }
+  setCORSHeadersIfNeeded(params.req, params.res, corsOptions);
 
   if ('OTIONS' === req.method) {
     return respondOk(res);
