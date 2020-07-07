@@ -72,7 +72,7 @@ const entryFilter = (corsOptions, params, chain) => {
 
   setCORSHeadersIfNeeded(params.req, params.res, corsOptions);
 
-  if ('OTIONS' === req.method) {
+  if ('OPTIONS' === req.method) {
     return respondOk(res);
   }
   const registeredMethods = ['OPTIONS', ...methods()];
