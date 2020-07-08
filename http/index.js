@@ -27,7 +27,7 @@ const { routerParserFilter, actionFilter, registerRoute } = require('./filters/r
 const log = new VieroLog('http');
 const filters = [];
 
-class VieroHTTP {
+class VieroHTTPServer {
 
   constructor() {
     this._server = http.createServer((req, res) => {
@@ -55,7 +55,7 @@ class VieroHTTP {
     return new Promise((resolve, reject) => {
       this._server.listen(port, host, () => {
         if (log.isDebug()) {
-          log.debug(`VieroHTTP server is listening on ${host}:${port}`);
+          log.debug(`VieroHTTPServer server is listening on ${host}:${port}`);
         }
         return resolve();
       });
@@ -72,7 +72,7 @@ class VieroHTTP {
           return reject(new VieroError('/http', 732562, { [VieroError.KEY.ERROR]: err }));
         }
         if (log.isDebug()) {
-          log.debug('VieroHTTP server is stopped listening.');
+          log.debug('VieroHTTPServer server is stopped listening.');
         }
         return resolve();
       });
@@ -151,4 +151,4 @@ class VieroHTTP {
   }
 }
 
-module.exports = { VieroHTTP };
+module.exports = { VieroHTTPServer };
