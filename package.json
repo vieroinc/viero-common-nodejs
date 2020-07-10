@@ -1,6 +1,6 @@
 {
   "name": "@viero/common-nodejs",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Common code specific to nodejs used by @vieroinc.",
   "homepage": "https://github.com/vieroinc/viero-common-nodejs",
   "contributors": [
@@ -18,8 +18,8 @@
     "reset": "rm -rf node_modules"
   },
   "dependencies": {
-    "@viero/common": "^1.4.3",
-    "lodash": "^4.17.15"
+    "@viero/common": "^1.4.4",
+    "lodash": "^4.17.19"
   },
   "devDependencies": {}
 }
