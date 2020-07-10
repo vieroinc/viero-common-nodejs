@@ -39,7 +39,6 @@ class VieroHTTPServer {
         giveUpFilter
       ]).next()
     });
-    this._server.on('error', (err) => reject(new VieroError('/http', 732561, { [VieroError.KEY.ERROR]: err })));
   }
 
   get httpServer() {
@@ -53,6 +52,7 @@ class VieroHTTPServer {
     port = port || 80;
     host = host || '::';
     return new Promise((resolve, reject) => {
+      this._server.on('error', (err) => reject(new VieroError('/http', 732561, { [VieroError.KEY.ERROR]: err })));
       this._server.listen(port, host, () => {
         if (log.isDebug()) {
           log.debug(`VieroHTTPServer server is listening on ${host}:${port}`);
