@@ -1,6 +1,6 @@
 {
   "name": "@viero/common-nodejs",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "Common code specific to nodejs used by @vieroinc.",
   "homepage": "https://github.com/vieroinc/viero-common-nodejs",
   "contributors": [
@@ -15,11 +15,14 @@
     "url": "https://github.com/vieroinc/viero-common-nodejs.git"
   },
   "scripts": {
-    "reset": "rm -rf node_modules"
+    "reset": "rimraf node_modules",
+    "npmjs": "npm publish ./ --access public"
   },
   "dependencies": {
-    "@viero/common": "^1.4.4",
+    "@viero/common": "^1.4.16",
     "lodash": "^4.17.19"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "rimraf": "^3.0.2"
+  }
 }
