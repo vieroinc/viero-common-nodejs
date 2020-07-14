@@ -1,6 +1,6 @@
 {
   "name": "@viero/common-nodejs",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Common code specific to nodejs used by @vieroinc.",
   "homepage": "https://github.com/vieroinc/viero-common-nodejs",
   "contributors": [
@@ -15,14 +15,22 @@
     "url": "https://github.com/vieroinc/viero-common-nodejs.git"
   },
   "scripts": {
-    "reset": "rimraf node_modules",
-    "npmjs": "npm publish ./ --access public"
+    "clean": "rimraf dist",
+    "reset": "npm run clean && rimraf node_modules",
+    "build": "npm run clean && babel src -d ./dist --source-maps inline",
+    "dist": "npm run build && copyfiles package.json README.md LICENSE.md dist",
+    "npmjs": "npm publish ./dist --access public"
   },
+  "module": "./index.js",
   "dependencies": {
     "@viero/common": "^1.4.16",
     "lodash": "^4.17.19"
   },
   "devDependencies": {
+    "@babel/cli": "^7.10.4",
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "copyfiles": "^2.3.0",
     "rimraf": "^3.0.2"
   }
 }
