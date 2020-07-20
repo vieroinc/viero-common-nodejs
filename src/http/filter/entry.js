@@ -31,7 +31,7 @@ const setCORSHeadersIfNeeded = (req, res, options) => {
 
   try {
     const { hostname } = new URL(from);
-    if (options.origins.some((origin) => hostname.indexOf(origin) > -1)) { // TODO: seq read
+    if (options.origins.some((allowedOriginEnding) => hostname.endsWith(allowedOriginEnding))) { // TODO: seq read
       res.setHeader('Access-Control-Allow-Origin', `${from}`);
       res.setHeader('Access-Control-Allow-Methods', this._server.allowedMethods.join(', '));
       if (options.headers) {
