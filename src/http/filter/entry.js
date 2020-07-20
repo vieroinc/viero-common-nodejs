@@ -20,7 +20,7 @@ const { VieroHTTPServerFilter } = require('./filter');
 const { http400, http405 } = require('../error');
 const { respondError, respondOk } = require('../respond');
 
-const setCORSHeadersIfNeeded = (req, res, options) => {
+const setCORSHeadersIfNeeded = (self, req, res, options) => {
   if (!options || !options.origins) {
     return;
   }
@@ -33,7 +33,8 @@ const setCORSHeadersIfNeeded = (req, res, options) => {
     const { hostname } = new URL(from);
     if (options.origins.some((allowedOriginEnding) => hostname.endsWith(allowedOriginEnding))) { // TODO: seq read
       res.setHeader('Access-Control-Allow-Origin', `${from}`);
-      res.setHeader('Access-Control-Allow-Methods', this._server.allowedMethods.join(', '));
+      // eslint-disable-next-line no-underscore-dangle
+      res.setHeader('Access-Control-Allow-Methods', self._server.allowedMethods.join(', '));
       if (options.headers) {
         res.setHeader('Access-Control-Allow-Headers', options.headers.join(', '));
       }
@@ -73,7 +74,7 @@ class VieroEntryFilter extends VieroHTTPServerFilter {
       params.remoteAddress = req.connection.remoteAddress;
     }
 
-    setCORSHeadersIfNeeded(params.req, params.res, this._options);
+    setCORSHeadersIfNeeded(this, params.req, params.res, this._options);
 
     if (req.method === 'OPTIONS') {
       return respondOk(res);
