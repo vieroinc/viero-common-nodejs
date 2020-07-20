@@ -1,23 +1,22 @@
-
 const fs = require('fs').promises;
 const { promisify } = require('util');
-const zlib = require("zlib");
+const zlib = require('zlib');
 const klaw = require('klaw');
 const Negotiator = require('negotiator');
-const { VieroHTTPServerFilter } = require('../filter');
 const { VieroLog } = require('@viero/common/log');
 const { VieroError } = require('@viero/common/error');
+const { VieroHTTPServerFilter } = require('../filter');
 const { respondOk } = require('../../respond');
 
 const log = new VieroLog('VieroStaticFilter');
 
 const deflate = promisify(zlib.deflate);
 const gzip = promisify(zlib.gzip);
-const brotliCompress = promisify(zlib.brotliCompress);
+const brotli = promisify(zlib.brotliCompress);
 
-const _defaultMimes = {
+const DEFAULTMIMES = {
   '\\.css$': { mime: 'text/css', compress: true },
-  '\\.html$': { mime: 'text/html', compress: true },
+  '\\.htm$': { mime: 'text/html', compress: true },
   '\\.html$': { mime: 'text/html', compress: true },
   '\\.ico$': { mime: 'image/x-icon' },
   '\\.jpg$': { mime: 'image/jpeg' },
@@ -36,13 +35,13 @@ const _defaultMimes = {
   '\\.xml$': { mime: 'text/xml', compress: true },
 };
 
-const _mimeOf = (filePath, mimes) => {
-  const key = Object.keys(mimes).find((regexStr) => -1 < filePath.search(regexStr));
+const mimeOf = (filePath, mimes) => {
+  const key = Object.keys(mimes).find((regexStr) => filePath.search(regexStr) > -1);
   return mimes[key];
 };
 
-const _processFile = (registry, mimes, compress, { filePath, webPath }) => {
-  const mime = _mimeOf(filePath, mimes);
+const processFile = (registry, mimes, compress, { filePath, webPath }) => {
+  const mime = mimeOf(filePath, mimes);
   compress = compress || {}; // br, gzip, deflate
   registry[webPath] = { filePath, mime: mime.mime, content: {} };
   return fs.readFile(filePath)
@@ -53,7 +52,7 @@ const _processFile = (registry, mimes, compress, { filePath, webPath }) => {
     .then((buffer) => {
       if (mime.compress && compress.deflate) {
         return deflate(buffer, { level: 9 })
-          .then((deflate) => Object.assign(registry[webPath].content, { deflate }))
+          .then((deflated) => Object.assign(registry[webPath].content, { deflate: deflated }))
           .then(() => buffer);
       }
       return buffer;
@@ -61,22 +60,23 @@ const _processFile = (registry, mimes, compress, { filePath, webPath }) => {
     .then((buffer) => {
       if (mime.compress && compress.gzip) {
         return gzip(buffer, { level: 9 })
-          .then((gzip) => Object.assign(registry[webPath].content, { gzip }))
+          .then((gzipped) => Object.assign(registry[webPath].content, { gzip: gzipped }))
           .then(() => buffer);
       }
       return buffer;
     })
     .then((buffer) => {
       if (mime.compress && compress.br) {
-        return brotliCompress(buffer, {
+        return brotli(buffer, {
           params: {
             [zlib.constants.BROTLI_PARAM_MODE]: zlib.constants.BROTLI_MODE_TEXT,
             [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
-            [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length
-          }
+            [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length,
+          },
         })
-          .then((br) => Object.assign(registry[webPath].content, { br }));
+          .then((brotlied) => Object.assign(registry[webPath].content, { br: brotlied }));
       }
+      return buffer;
     })
     .then(() => ({ webPath, entry: registry[webPath] }))
     .catch((err) => {
@@ -87,29 +87,28 @@ const _processFile = (registry, mimes, compress, { filePath, webPath }) => {
 };
 
 class VieroStaticFilter extends VieroHTTPServerFilter {
-
   constructor(server) {
     super(server);
 
     ['GET', 'HEAD'].forEach((method) => this._server.allowMethod(method));
-    this._mimes = { ..._defaultMimes };
+    this._mimes = { ...DEFAULTMIMES };
   }
 
   /**
-   * 
+   *
    * @param {*} options the filter options.
    */
   setup(options = {}) {
     super.setup(options);
 
     if (!options.root) return;
-    const root = options.root;
+    const { root } = options;
     const indexFileNames = options.indexFileNames || ['index.html', 'index.htm'];
-    this._mimes = { ..._defaultMimes, ...(options.mimes || {}) };
+    this._mimes = { ...DEFAULTMIMES, ...(options.mimes || {}) };
     const rootLen = root.length;
-    const _registry = {};
+    const registry = {};
     if (!this._registry) {
-      this._registry = _registry;
+      this._registry = registry;
     }
     klaw(root)
       .on('data', ({ path, stats }) => {
@@ -118,12 +117,13 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
         const webPath = filePath.slice(rootLen);
         const fileName = webPath.split('/').pop();
         if (indexFileNames.includes(fileName)) {
-          return _processFile(_registry, this._mimes, options.compress, {
+          processFile(registry, this._mimes, options.compress, {
             filePath,
             webPath: webPath.slice(0, -fileName.length),
           });
+          return;
         }
-        _processFile(_registry, this._mimes, options.compress, { filePath, webPath });
+        processFile(registry, this._mimes, options.compress, { filePath, webPath });
       })
       .on('error', (err) => {
         if (log.isError()) {
@@ -131,7 +131,7 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
         }
       })
       .on('end', () => {
-        if (this._registry !== _registry) this._registry = _registry;
+        if (this._registry !== registry) this._registry = registry;
       });
   }
 
@@ -139,21 +139,21 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
     super.run(params, chain);
     const item = this._registry[params.req.path];
     if (!item) {
-      return chain.next();
+      chain.next();
+      return;
     }
     const negotiator = new Negotiator(params.req);
     const available = Object.keys(item.content);
     const allowed = negotiator.encodings(available);
     const encoding = ['br', 'deflate', 'gzip']
-      .find((encoding) => allowed.includes(encoding) && available.includes(encoding)) || 'identity';
-    params.res.setHeader("content-type", item.mime);
-    params.res.setHeader("content-encoding", encoding);
+      .find((anEncoding) => allowed.includes(anEncoding) && available.includes(anEncoding)) || 'identity';
+    params.res.setHeader('content-type', item.mime);
+    params.res.setHeader('content-encoding', encoding);
     respondOk(params.res, item.content[encoding]);
     if (log.isDebug()) {
       log.debug(`${Date.now() - params.at}ms`, params.req.path);
     }
   }
-
 }
 
 module.exports = { VieroStaticFilter };
