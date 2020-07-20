@@ -14,10 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-const crypto = require("crypto");
-const querystring = require("querystring");
-const stream = require("stream");
-const zlib = require("zlib");
+const crypto = require('crypto');
+const querystring = require('querystring');
+const stream = require('stream');
+const zlib = require('zlib');
 
 const { VieroError } = require('@viero/common/error');
 
@@ -26,28 +26,40 @@ const detectAbort = (inStream, outStream, shouldEnd, cb) => {
   let outputFinished = false;
 
   const tearDown = () => {
-    inStream.removeListener("end", inStreamEnd);
-    inStream.removeListener("error", inStreamErr);
-    inStream.removeListener("close", inStreamClose);
+    // eslint-disable-next-line no-use-before-define
+    inStream.removeListener('end', inStreamEnd);
+    // eslint-disable-next-line no-use-before-define
+    inStream.removeListener('error', inStreamErr);
+    // eslint-disable-next-line no-use-before-define
+    inStream.removeListener('close', inStreamClose);
 
-    outStream.removeListener("error", outStreamErr);
-    outStream.removeListener("close", outStreamClose);
-    outStream.removeListener("finish", outStreamFinish);
+    // eslint-disable-next-line no-use-before-define
+    outStream.removeListener('error', outStreamErr);
+    // eslint-disable-next-line no-use-before-define
+    outStream.removeListener('close', outStreamClose);
+    // eslint-disable-next-line no-use-before-define
+    outStream.removeListener('finish', outStreamFinish);
   };
 
   const setup = () => {
-    inStream.on("end", inStreamEnd);
-    inStream.on("error", inStreamErr);
-    inStream.on("close", inStreamClose);
+    // eslint-disable-next-line no-use-before-define
+    inStream.on('end', inStreamEnd);
+    // eslint-disable-next-line no-use-before-define
+    inStream.on('error', inStreamErr);
+    // eslint-disable-next-line no-use-before-define
+    inStream.on('close', inStreamClose);
 
-    outStream.on("close", outStreamClose);
-    outStream.on("error", outStreamErr);
-    outStream.on("finish", outStreamFinish);
+    // eslint-disable-next-line no-use-before-define
+    outStream.on('close', outStreamClose);
+    // eslint-disable-next-line no-use-before-define
+    outStream.on('error', outStreamErr);
+    // eslint-disable-next-line no-use-before-define
+    outStream.on('finish', outStreamFinish);
   };
 
   const inStreamErr = (err) => {
     tearDown();
-    cb(new VieroError("utils/stream/detectAbort", 565201));
+    cb(new VieroError('utils/stream/detectAbort', 565201, { [VieroError.KEY.ERROR]: err }));
   };
 
   const inStreamEnd = () => {
@@ -83,7 +95,7 @@ const detectAbort = (inStream, outStream, shouldEnd, cb) => {
 
   const outStreamErr = (err) => {
     tearDown();
-    cb(new VieroError("utils/stream/detectAbort", 565202));
+    cb(new VieroError('utils/stream/detectAbort', 565202, { [VieroError.KEY.ERROR]: err }));
   };
 
   const outStreamFinish = () => {
@@ -98,22 +110,22 @@ const detectAbort = (inStream, outStream, shouldEnd, cb) => {
 };
 
 const decompressBody = (req) => {
-  const encoding = (req.headers["content-encoding"] || "identity").toLowerCase();
-  const contentLength = req.headers["content-length"];
+  const encoding = (req.headers['content-encoding'] || 'identity').toLowerCase();
+  const contentLength = req.headers['content-length'];
   let reqStream;
 
   switch (encoding) {
-    case "deflate": {
+    case 'deflate': {
       reqStream = zlib.createInflate();
       req.pipe(reqStream);
       break;
     }
-    case "gzip": {
+    case 'gzip': {
       reqStream = zlib.createGunzip();
       req.pipe(reqStream);
       break;
     }
-    case "identity": {
+    case 'identity': {
       reqStream = req;
       reqStream.length = contentLength;
       break;
@@ -125,41 +137,43 @@ const decompressBody = (req) => {
   return reqStream;
 };
 
-const parsedBody = (req, parser) => {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
+const parsedBody = (req, parser) => new Promise((resolve, reject) => {
+  const chunks = [];
 
-    const reqStream = decompressBody(req);
-    if (!reqStream) {
-      return reject();
+  const reqStream = decompressBody(req);
+  if (!reqStream) {
+    reject();
+    return;
+  }
+
+  reqStream.on('data', (chunk) => chunks.push(chunk));
+
+  reqStream.on('end', () => {
+    const buffer = Buffer.concat(chunks);
+    const string = buffer.toString('utf8');
+    if (!string || !string.length) {
+      resolve({});
+      return;
     }
 
-    reqStream.on("data", (chunk) => chunks.push(chunk));
-
-    reqStream.on("end", () => {
-      let buffer = Buffer.concat(chunks);
-      let string = buffer.toString("utf8");
-      if (!string || !string.length) {
-        return resolve({});
-      }
-
-      let something;
-      try {
-        something = parser(string, buffer);
-      } finally {
-        if (!something) {
-          return resolve({});
-        }
-        resolve(something);
-      }
-    });
-
-    reqStream.on("error", () => reject());
+    let something;
+    try {
+      something = parser(string, buffer);
+    } catch (err) {
+      // nop
+    }
+    if (!something) {
+      resolve({});
+      return;
+    }
+    resolve(something);
   });
-};
+
+  reqStream.on('error', () => reject());
+});
 
 const bufferBody = (req) => parsedBody(req, (str, buf) => buf);
-const formBody = (req) => parsedBody(req, (str, buf) => querystring.parse(str));
+const formBody = (req) => parsedBody(req, (str) => querystring.parse(str));
 const jsonBody = (req) => parsedBody(req, JSON.parse);
 
 class DigestStream extends stream.PassThrough {
@@ -169,18 +183,18 @@ class DigestStream extends stream.PassThrough {
     this._digester = crypto.createHash(algorithm);
     this._promise = Promise.defer();
 
-    let contentLength = 0;
-    this.on("data", (chunk) => {
-      contentLength += chunk.byteLength;
-      this._digester.update(chunk, "binary");
+    // let contentLength = 0;
+    this.on('data', (chunk) => {
+      // contentLength += chunk.byteLength;
+      this._digester.update(chunk, 'binary');
     });
 
-    this.on("error", (err) => {
+    this.on('error', (err) => {
       this._digester.reject(err);
     });
 
-    this.on("end", () => {
-      this._promise.resolve(this._digester.digest("hex"));
+    this.on('end', () => {
+      this._promise.resolve(this._digester.digest('hex'));
     });
   }
 

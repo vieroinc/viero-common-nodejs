@@ -24,12 +24,20 @@ const log = new VieroLog('/http/respond');
  */
 const respond = (res, code, payload) => {
   res.statusCode = code;
-  if (payload && isObject(payload) && !isBuffer(payload)) {
-    payload = JSON.stringify(payload);
-    res.setHeader("content-type", "application/json; charset=utf-8");
-    res.setHeader("content-length", Buffer.byteLength(payload));
+  if (payload) {
+    if (isObject(payload) && !isBuffer(payload)) {
+      try {
+        payload = JSON.stringify(payload);
+        res.setHeader('content-type', 'application/json; charset=utf-8');
+        res.setHeader('content-length', Buffer.byteLength(payload));
+      } catch (err) {
+        // nop
+      }
+    } else if (isBuffer(payload)) {
+      res.setHeader('content-length', Buffer.byteLength(payload));
+    }
   }
-  res.end(payload, "utf8");
+  res.end(payload);
 };
 
 /**
@@ -65,7 +73,7 @@ const respondPartialContent = (res, payload) => {
  */
 const respondForward = (res, url) => {
   res.statusCode = 307;
-  res.setHeader("location", url);
+  res.setHeader('location', url);
   res.end();
 };
 
@@ -79,21 +87,25 @@ const respondError = (res, err) => {
   }
   */
   if (!err.httpCode) {
+    delete err.stack;
     err = {
       httpCode: 500,
-      msg: "Internal Server Error",
+      msg: 'Internal Server Error',
       root: err,
     };
   }
   if (log.isError()) {
     log.error('HTTP error', `${err.httpCode}/${err.root ? err.root.code : '-'}`, err);
   }
-  if (err.root) {
-    delete err.root.stack;
-  }
   respond(res, err.httpCode, { error: err });
 };
 
 module.exports = {
-  respond, respondOk, respondCreated, respondNoContent, respondPartialContent, respondForward, respondError,
+  respond,
+  respondOk,
+  respondCreated,
+  respondNoContent,
+  respondPartialContent,
+  respondForward,
+  respondError,
 };

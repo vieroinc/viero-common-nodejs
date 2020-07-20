@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-class FilterChain {
-
+class VieroFilterChain {
   constructor(req, res, filters) {
     this._filters = filters.slice(0);
     this._params = { req, res };
@@ -26,11 +25,8 @@ class FilterChain {
     if (!current) {
       return;
     }
-    current(this._params, this);
+    current.run(this._params, this);
   }
-
 }
 
-module.exports = {
-  FilterChain,
-};
+module.exports = { VieroFilterChain };

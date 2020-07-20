@@ -32,4 +32,4 @@ const emitEvent = VieroEventCenter.sharedCenter.emit.bind(VieroEventCenter.share
 
 module.exports = {
   VieroEventCenter, onEvent, emitEvent,
-}
+};

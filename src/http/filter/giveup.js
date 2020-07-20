@@ -14,22 +14,24 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-const { jsonBody, formBody } = require('../../../utils/stream');
+const { VieroHTTPServerFilter } = require('./filter');
+const { respondError } = require('../respond.js');
+const { http404 } = require('../error.js');
 
-const readBody = (req) => {
-  if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
-    switch (req.headers["content-type"]) {
-      case 'application/json': return jsonBody(req);
-      case 'application/x-www-form-urlencoded': return formBody(req);
+class VieroGiveUpFilter extends VieroHTTPServerFilter {
+  run(params, chain) {
+    super.run(params, chain);
+
+    if (this._options) {
+      if (this._options.mime) {
+        return this._options.mime(params);
+      }
+      if (this._options.default) {
+        return this._options.default();
+      }
     }
+    return respondError(params.res, http404());
   }
-  return Promise.resolve();
-};
+}
 
-const bodyFilter = (params, chain) => readBody(params.req)
-  .then((payload) => params.req.body = (payload || null))
-  .then(() => chain.next());
-
-module.exports = {
-  bodyFilter,
-};
+module.exports = { VieroGiveUpFilter };

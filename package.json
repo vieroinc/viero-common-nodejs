@@ -1,6 +1,6 @@
 {
   "name": "@viero/common-nodejs",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Common code specific to nodejs used by @vieroinc.",
   "homepage": "https://github.com/vieroinc/viero-common-nodejs",
   "contributors": [
@@ -19,18 +19,25 @@
     "reset": "npm run clean && rimraf node_modules",
     "build": "npm run clean && babel src -d ./dist --source-maps inline",
     "dist": "npm run build && copyfiles package.json README.md LICENSE.md dist",
+    "lint": "eslint ./src",
     "npmjs": "npm publish ./dist --access public"
   },
   "module": "./index.js",
   "dependencies": {
-    "@viero/common": "^1.4.16",
-    "lodash": "^4.17.19"
+    "@viero/common": "^1.5.0",
+    "klaw": "^3.0.0",
+    "lodash": "^4.17.19",
+    "negotiator": "^0.6.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.10.4",
-    "@babel/core": "^7.10.4",
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.10.5",
     "@babel/preset-env": "^7.10.4",
     "copyfiles": "^2.3.0",
+    "eslint": "^7.5.0",
+    "eslint-config-airbnb-base": "^14.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "prettier": "^2.0.5",
     "rimraf": "^3.0.2"
   }
 }

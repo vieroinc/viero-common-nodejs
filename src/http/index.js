@@ -19,25 +19,32 @@ const http = require('http');
 const { VieroError } = require('@viero/common/error');
 const { VieroLog } = require('@viero/common/log');
 
-const { FilterChain } = require('./filterchain');
-const { entryFilter } = require('./filters/entry');
-const { giveUpFilter, registerGiveUp } = require('./filters/giveup');
-const { routerParserFilter, actionFilter, registerRoute } = require('./filters/router');
+const { VieroFilterChain } = require('./filterchain');
+const { VieroEntryFilter } = require('./filter/entry');
+const { VieroGiveUpFilter } = require('./filter/giveup');
+const { VieroRouterFilter } = require('./filter/router');
+const { VieroActionFilter } = require('./filter/action');
 
 const log = new VieroLog('http');
-const filters = [];
 
 class VieroHTTPServer {
-
   constructor() {
+    this._entryFilter = new VieroEntryFilter(this);
+    this._routerFilter = new VieroRouterFilter(this);
+    this._actionFilter = new VieroActionFilter(this);
+    this._giveUpFilter = new VieroGiveUpFilter(this);
+
+    this._filters = [];
+    this._allowedMethods = new Set(['OPTIONS']);
+
     this._server = http.createServer((req, res) => {
-      new FilterChain(req, res, [
-        entryFilter.bind(null, this._corsOptions),
-        routerParserFilter,
-        ...filters,
-        actionFilter,
-        giveUpFilter
-      ]).next()
+      new VieroFilterChain(req, res, [
+        this._entryFilter,
+        this._routerFilter,
+        ...this._filters,
+        this._actionFilter,
+        this._giveUpFilter,
+      ]).next();
     });
   }
 
@@ -79,6 +86,14 @@ class VieroHTTPServer {
     });
   }
 
+  allowMethod(method) {
+    this._allowedMethods.add(method);
+  }
+
+  get allowedMethods() {
+    return [...this._allowedMethods];
+  }
+
   /**
    * Cors options is like:
    *  {
@@ -86,17 +101,17 @@ class VieroHTTPServer {
    *    headers: <array of header names>
    *    allowCredentials: <boolean>
    *  }
-   * @param {*} options 
+   * @param {*} options
    */
   setCORSOptions(options) {
-    this._corsOptions = options;
+    this._entryFilter.setup(options);
   }
 
   /**
    * Registers a filter.
    */
   registerFilter(filter, description) {
-    filters.push(filter);
+    this._filters.push(filter);
     if (log.isDebug()) {
       log.debug(`+ Filter: ${description}`);
     }
@@ -106,20 +121,18 @@ class VieroHTTPServer {
    * Registers a route. See convenience methods for the most common methods.
    */
   registerRoute(method, path, cb, description) {
-    registerRoute(method, path, cb);
+    this._routerFilter.registerRoute(method, path, cb);
     if (log.isDebug()) {
-      log.debug(`+ Route ${method.toUpperCase() + "       ".substring(0, 7 - method.length)} - ${path}${!!description ? ` // ${description}` : ''}.`);
+      description = description ? ` // ${description}` : '';
+      log.debug(`+ Route ${method.toUpperCase()}: ${path} ${description}`);
     }
   }
 
   /**
-   * Registers a 404 handler.
+   * Registers 404 handlers.
    */
-  registerFourOFour(mime, cb, description) {
-    if (log.isDebug()) {
-      log.debug(`+ 404 handler: ${description}`);
-    }
-    registerGiveUp(mime, cb);
+  registerFourOFour(options) {
+    this._giveUpFilter.setup(options);
   }
 
   /**
@@ -127,6 +140,13 @@ class VieroHTTPServer {
    */
   get(path, cb, description) {
     return this.registerRoute('GET', path, cb, description);
+  }
+
+  /**
+   * Convenience method to declare a HEAD.
+   */
+  head(path, cb, description) {
+    return this.registerRoute('HEAD', path, cb, description);
   }
 
   /**

@@ -14,31 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-const { respondError } = require('../respond.js');
-const { http404 } = require('../error.js');
+const { VieroHTTPServerFilter } = require('./filter');
 
-const giveUps = {
-  mime: {},
-  default: null,
-};
+class VieroActionFilter extends VieroHTTPServerFilter {
+  run(params, chain) {
+    super.run(params, chain);
 
-const registerGiveUp = (mime, cb) => {
-  if (mime) {
-    giveUps.mime[mime] = cb;
+    if (params.action) {
+      return params.action(params);
+    }
+    return chain.next();
   }
-  giveUps.default = cb;
 }
 
-const giveUpFilter = (params) => {
-  if (giveUps['mime']) {
-    return giveUps['mime'](params);
-  }
-  if (giveUps.default) {
-    return giveUps.default();
-  }
-  respondError(res, http404());
-};
-
-module.exports = {
-  registerGiveUp, giveUpFilter,
-};
+module.exports = { VieroActionFilter };

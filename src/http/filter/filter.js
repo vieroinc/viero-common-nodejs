@@ -14,16 +14,28 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-export { VieroHTTPServer } from './http';
+const { VieroError } = require('@viero/common/error');
 
-export { VieroEventCenter, onEvent, emitEvent } from './event';
+class VieroHTTPServerFilter {
+  constructor(server) {
+    if (!server) {
+      throw new VieroError('VieroHTTPServerFilter', 303480);
+    }
+    this._server = server;
+  }
 
-export {
-  DigestStream,
-  jsonBody,
-  formBody,
-  bufferBody,
-  parsedBody,
-  decompressBody,
-  detectAbort,
-} from './utils/stream';
+  setup(options) {
+    if (!options) {
+      throw new VieroError('VieroHTTPServerFilter', 755624);
+    }
+    this._options = options;
+  }
+
+  run(params, chain) {
+    if (!params || !chain) {
+      throw new VieroError('VieroHTTPServerFilter', 143601);
+    }
+  }
+}
+
+module.exports = { VieroHTTPServerFilter };
