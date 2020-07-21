@@ -22,7 +22,7 @@ const Negotiator = require('negotiator');
 const { VieroLog } = require('@viero/common/log');
 const { VieroError } = require('@viero/common/error');
 const { VieroHTTPServerFilter } = require('../filter');
-const { respondOk } = require('../../respond');
+const { respond } = require('../../respond');
 
 const log = new VieroLog('VieroStaticFilter');
 
@@ -30,7 +30,7 @@ const deflate = promisify(zlib.deflate);
 const gzip = promisify(zlib.gzip);
 const brotli = promisify(zlib.brotliCompress);
 
-const DEFAULTMIMES = {
+const DEFAULT_MIMES = {
   '\\.css$': { mime: 'text/css', compress: true },
   '\\.htm$': { mime: 'text/html', compress: true },
   '\\.html$': { mime: 'text/html', compress: true },
@@ -109,7 +109,7 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
     super(server);
 
     ['GET', 'HEAD'].forEach((method) => this._server.allowMethod(method));
-    this._mimes = { ...DEFAULTMIMES };
+    this._mimes = { ...DEFAULT_MIMES };
   }
 
   /**
@@ -122,7 +122,7 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
     if (!options.root) return;
     const { root } = options;
     const indexFileNames = options.indexFileNames || ['index.html', 'index.htm'];
-    this._mimes = { ...DEFAULTMIMES, ...(options.mimes || {}) };
+    this._mimes = { ...DEFAULT_MIMES, ...(options.mimes || {}) };
     const rootLen = root.length;
     const registry = {};
     if (!this._registry) {
@@ -155,11 +155,15 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
 
   run(params, chain) {
     super.run(params, chain);
-    const item = this._registry[params.req.path];
-    if (!item) {
+    if (!this._registry[params.req.path]) {
       chain.next();
       return;
     }
+    this.serve(params, 200);
+  }
+
+  serve(params, statusCode) {
+    const item = this._registry[params.req.path];
     const negotiator = new Negotiator(params.req);
     const available = Object.keys(item.content);
     const allowed = negotiator.encodings(available);
@@ -167,7 +171,7 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
       .find((anEncoding) => allowed.includes(anEncoding) && available.includes(anEncoding)) || 'identity';
     params.res.setHeader('content-type', item.mime);
     params.res.setHeader('content-encoding', encoding);
-    respondOk(params.res, item.content[encoding]);
+    respond(params.res, statusCode, item.content[encoding]);
     if (log.isDebug()) {
       log.debug(`${Date.now() - params.at}ms`, params.req.path);
     }
