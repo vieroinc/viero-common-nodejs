@@ -27,7 +27,7 @@ class VieroGiveUpFilter extends VieroHTTPServerFilter {
         return this._options.mime(params);
       }
       if (this._options.default) {
-        return this._options.default();
+        return this._options.default(params);
       }
     }
     return respondError(params.res, http404());

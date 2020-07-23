@@ -5,6 +5,7 @@
     "node": true,
     "es6": true
   },
+  "ignorePatterns": ["dist"],
   "rules": {
     "no-console": "warn",
     "no-underscore-dangle": ["error", { "allowAfterThis": true, "allowAfterThisConstructor": true }],

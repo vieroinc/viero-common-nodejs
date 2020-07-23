@@ -162,8 +162,8 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
     this.serve(params, 200);
   }
 
-  serve(params, statusCode) {
-    const item = this._registry[params.req.path];
+  serve(params, statusCode, pathOverride) {
+    const item = this._registry[pathOverride || params.req.path];
     const negotiator = new Negotiator(params.req);
     const available = Object.keys(item.content);
     const allowed = negotiator.encodings(available);
