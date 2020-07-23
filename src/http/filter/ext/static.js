@@ -57,6 +57,7 @@ const mimeOf = (filePath, mimes) => {
 };
 
 const processFile = (registry, mimes, compress, { filePath, webPath }) => {
+  // application/octet-stream
   const mime = mimeOf(filePath, mimes);
   // eslint-disable-next-line no-param-reassign
   compress = compress || {}; // br, gzip, deflate
@@ -120,17 +121,22 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
     super.setup(options);
 
     if (!options.root) return;
-    const { root } = options;
     const indexFileNames = options.indexFileNames || ['index.html', 'index.htm'];
     this._mimes = { ...DEFAULT_MIMES, ...(options.mimes || {}) };
-    const rootLen = root.length;
+    const rootLen = options.root.length;
     const registry = {};
     if (!this._registry) {
       this._registry = registry;
     }
-    klaw(root)
+    klaw(options.root)
       .on('data', ({ path, stats }) => {
         if (stats.isDirectory()) return;
+        if (options.excludes.some((regexStr) => path.search(regexStr) > -1)) {
+          if (log.isDebug()) {
+            log.debug('excluding', path);
+          }
+          return;
+        }
         const filePath = path;
         const webPath = filePath.slice(rootLen);
         const fileName = webPath.split('/').pop();
