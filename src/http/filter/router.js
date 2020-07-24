@@ -65,7 +65,7 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
       path = path.slice(0, -1);
     }
     const pathComponents = path.split('/');
-    params.pathParams = {};
+    params.req.pathParams = {};
 
     let map = this._registry[params.req.method] || {};
     while (true) {
@@ -92,7 +92,7 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
         return chain.next();
       }
       map = map[parametric[0]];
-      params.pathParams[parametric[0].slice(1)] = decodeURIComponent(pathElement);
+      params.req.pathParams[parametric[0].slice(1)] = decodeURIComponent(pathElement);
     }
   }
 }
