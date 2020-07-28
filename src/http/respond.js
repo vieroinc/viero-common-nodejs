@@ -40,54 +40,26 @@ const respond = (res, code, payload) => {
   res.end(payload);
 };
 
-/**
- * Convenience for HTTP 200
+/*
+ * Convenience methods.
  */
-const respondOk = (res, payload) => {
-  respond(res, 200, payload);
-};
+const respondOk = (res, payload) => respond(res, 200, payload);
+const respondCreated = (res, payload) => respond(res, 201, payload);
+const respondNoContent = (res) => respond(res, 204);
+const respond2FARequired = (res) => respond(res, 250);
+const respondPartialContent = (res, payload) => respond(res, 406, payload);
 
-/**
- * Convenience for HTTP 201
- */
-const respondCreated = (res, payload) => {
-  respond(res, 201, payload);
-};
-
-/**
- * Convenience for HTTP 204
- */
-const respondNoContent = (res) => {
-  respond(res, 204);
-};
-
-/**
- * Convenience for HTTP 406
- */
-const respondPartialContent = (res, payload) => {
-  respond(res, 406, payload);
-};
-
-/**
- * Convenience for HTTP 307
- */
 const respondForward = (res, url) => {
   res.statusCode = 307;
   res.setHeader('location', url);
   res.end();
 };
 
-/**
- * Convenience for errors
- */
 const respondError = (res, err) => {
-  /* TODO: what is this?
-  if (900 === err.code) {
-    return;
-  }
-  */
   if (!err.httpCode) {
+    // eslint-disable-next-line no-param-reassign
     delete err.stack;
+    // eslint-disable-next-line no-param-reassign
     err = {
       httpCode: 500,
       msg: 'Internal Server Error',
@@ -95,7 +67,7 @@ const respondError = (res, err) => {
     };
   }
   if (log.isError()) {
-    log.error('HTTP error', `${err.httpCode}/${err.root ? err.root.code : '-'}`, err);
+    log.error('HTTP error', `${err.httpCode}/${err.root ? err.root.message : '-'}`, err);
   }
   respond(res, err.httpCode, { error: err });
 };
@@ -105,6 +77,7 @@ module.exports = {
   respondOk,
   respondCreated,
   respondNoContent,
+  respond2FARequired,
   respondPartialContent,
   respondForward,
   respondError,

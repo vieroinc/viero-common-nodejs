@@ -41,18 +41,15 @@ class VieroHttpError extends VieroError {
  */
 const errorCode = (code, message, err) => new VieroHttpError(code, message, err);
 
-/* HTTP 200- */
-const http250 = (message = '2FA Required') => errorCode(250, message);
-
 /* HTTP 400- */
-const http400 = (message = 'Bad Request') => errorCode(400, message);
-const http401 = (message = 'Unauthorized') => errorCode(401, message);
-const http402 = (message = 'Payment Required') => errorCode(402, message);
-const http403 = (message = 'Forbidden') => errorCode(403, message);
-const http404 = (message = 'Not Found') => errorCode(404, message);
-const http405 = (message = 'Method Not Allowed') => errorCode(405, message);
-const http409 = (message = 'Conflict') => errorCode(409, message);
-const http412 = (message = 'Not Created') => errorCode(412, message);
+const http400 = (message = 'Bad Request', err) => errorCode(400, message, err);
+const http401 = (message = 'Unauthorized', err) => errorCode(401, message, err);
+const http402 = (message = 'Payment Required', err) => errorCode(402, message, err);
+const http403 = (message = 'Forbidden', err) => errorCode(403, message, err);
+const http404 = (message = 'Not Found', err) => errorCode(404, message, err);
+const http405 = (message = 'Method Not Allowed', err) => errorCode(405, message, err);
+const http409 = (message = 'Conflict', err) => errorCode(409, message, err);
+const http412 = (message = 'Not Created', err) => errorCode(412, message, err);
 
 /* HTTP 500- */
 const http500 = (message = 'Internal Server Error', err) => errorCode(500, message, err);
