@@ -16,14 +16,15 @@
 
 const { VieroError } = require('@viero/common/error');
 
-const HTTP_CODE = 'HTTP_CODE';
+const HTTP_CODE = 'httpCode';
+const HTTP_MESSAGE = 'httpMessage';
 
 class VieroHttpError extends VieroError {
   constructor(code, message, err) {
     super('VieroHttpError', 846750, {
-      ...(err ? { [VieroError.KEY.ERROR]: err } : {}),
+      ...(err ? { [VieroError.KEY.MESSAGE]: err.message } : {}),
       [HTTP_CODE]: code,
-      [VieroError.KEY.MESSAGE]: message,
+      [HTTP_MESSAGE]: message,
     });
   }
 
