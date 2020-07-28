@@ -16,12 +16,23 @@
 
 const { VieroError } = require('@viero/common/error');
 
+const HTTP_CODE = 'HTTP_CODE';
+
 class VieroHttpError extends VieroError {
   constructor(code, message, err) {
-    super('/http/error', code, {
+    super('VieroHttpError', 846750, {
       ...(err ? { [VieroError.KEY.ERROR]: err } : {}),
+      [HTTP_CODE]: code,
       [VieroError.KEY.MESSAGE]: message,
     });
+  }
+
+  get httpMessage() {
+    return this.get(VieroError.KEY.MESSAGE);
+  }
+
+  get httpCode() {
+    return this.get(HTTP_CODE);
   }
 }
 
