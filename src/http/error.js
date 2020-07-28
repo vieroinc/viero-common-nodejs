@@ -67,7 +67,6 @@ const viero999 = (message = 'Test', err) => errorCode(999, message, err);
 module.exports = {
   VieroHttpError,
   errorCode,
-  http250,
   http400,
   http401,
   http402,
