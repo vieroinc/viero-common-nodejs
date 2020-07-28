@@ -178,9 +178,6 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
     params.res.setHeader('content-type', item.mime);
     params.res.setHeader('content-encoding', encoding);
     respond(params.res, statusCode, item.content[encoding]);
-    if (log.isDebug()) {
-      log.debug(`${Date.now() - params.at}ms`, params.req.path);
-    }
   }
 }
 

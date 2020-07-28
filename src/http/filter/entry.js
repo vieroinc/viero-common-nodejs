@@ -52,6 +52,8 @@ class VieroEntryFilter extends VieroHTTPServerFilter {
     super.run(params, chain);
 
     const { req, res } = params;
+    // eslint-disable-next-line no-underscore-dangle
+    res._viero = params;
 
     if (req.httpVersion !== '1.1') {
       return respondError(res, http400());

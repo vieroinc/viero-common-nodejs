@@ -27,6 +27,7 @@ const respond = (res, code, payload) => {
   if (payload) {
     if (isObject(payload) && !isBuffer(payload)) {
       try {
+        // eslint-disable-next-line no-param-reassign
         payload = JSON.stringify(payload);
         res.setHeader('content-type', 'application/json; charset=utf-8');
         res.setHeader('content-length', Buffer.byteLength(payload));
@@ -38,6 +39,13 @@ const respond = (res, code, payload) => {
     }
   }
   res.end(payload);
+
+  if (log.isDebug()) {
+    // eslint-disable-next-line no-underscore-dangle
+    log.debug(`${Date.now() - res._viero.at}ms`, '-', res._viero.req.method, res._viero.req.url);
+  }
+  // eslint-disable-next-line no-underscore-dangle
+  delete res._viero;
 };
 
 /*
@@ -50,9 +58,8 @@ const respond2FARequired = (res) => respond(res, 250);
 const respondPartialContent = (res, payload) => respond(res, 406, payload);
 
 const respondForward = (res, url) => {
-  res.statusCode = 307;
   res.setHeader('location', url);
-  res.end();
+  respond(res, 307);
 };
 
 const respondError = (res, err) => {
@@ -65,9 +72,6 @@ const respondError = (res, err) => {
       msg: 'Internal Server Error',
       root: err,
     };
-  }
-  if (log.isError()) {
-    log.error('HTTP error', `${err.httpCode}/${err.root ? err.root.message : '-'}`, err);
   }
   respond(res, err.httpCode, { error: err });
 };
