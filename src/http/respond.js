@@ -17,7 +17,7 @@
 const { isObject, isBuffer } = require('lodash');
 const { VieroLog } = require('@viero/common/log');
 
-const log = new VieroLog('/http/respond');
+const log = new VieroLog('http/respond');
 
 /**
  * Respond with code and payload if any.
@@ -42,7 +42,7 @@ const respond = (res, code, payload) => {
 
   if (log.isDebug()) {
     // eslint-disable-next-line no-underscore-dangle
-    log.debug(`${Date.now() - res._viero.at}ms`, '-', res._viero.req.method, res._viero.req.url);
+    log.debug(`${Date.now() - res._viero.at}ms`, '-', res._viero.req.method, code, res._viero.req.url);
   }
   // eslint-disable-next-line no-underscore-dangle
   delete res._viero;
