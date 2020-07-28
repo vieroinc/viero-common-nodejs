@@ -42,27 +42,27 @@ class VieroHttpError extends VieroError {
 const errorCode = (code, message, err) => new VieroHttpError(code, message, err);
 
 /* HTTP 400- */
-const http400 = (message = 'Bad Request', err) => errorCode(400, message, err);
-const http401 = (message = 'Unauthorized', err) => errorCode(401, message, err);
-const http402 = (message = 'Payment Required', err) => errorCode(402, message, err);
-const http403 = (message = 'Forbidden', err) => errorCode(403, message, err);
-const http404 = (message = 'Not Found', err) => errorCode(404, message, err);
-const http405 = (message = 'Method Not Allowed', err) => errorCode(405, message, err);
-const http409 = (message = 'Conflict', err) => errorCode(409, message, err);
-const http412 = (message = 'Not Created', err) => errorCode(412, message, err);
+const http400 = ({ err, message = 'Bad Request' }) => errorCode(400, message, err);
+const http401 = ({ err, message = 'Unauthorized' }) => errorCode(401, message, err);
+const http402 = ({ err, message = 'Payment Required' }) => errorCode(402, message, err);
+const http403 = ({ err, message = 'Forbidden' }) => errorCode(403, message, err);
+const http404 = ({ err, message = 'Not Found' }) => errorCode(404, message, err);
+const http405 = ({ err, message = 'Method Not Allowed' }) => errorCode(405, message, err);
+const http409 = ({ err, message = 'Conflict' }) => errorCode(409, message, err);
+const http412 = ({ err, message = 'Not Created' }) => errorCode(412, message, err);
 
 /* HTTP 500- */
-const http500 = (message = 'Internal Server Error', err) => errorCode(500, message, err);
+const http500 = ({ err, message = 'Internal Server Error' }) => errorCode(500, message, err);
 
 /* WEBDAV 400- */
-const webdav423 = (message = 'Locked', err) => errorCode(423, message, err);
+const webdav423 = ({ err, message = 'Locked' }) => errorCode(423, message, err);
 
 /* WEBDAV 500- */
-const webdav507 = (message = 'Insufficient Storage', err) => errorCode(507, message, err);
+const webdav507 = ({ err, message = 'Insufficient Storage' }) => errorCode(507, message, err);
 
 /* VIERO 900- */
-const viero900 = (message = 'Client Aborted', err) => errorCode(900, message, err);
-const viero999 = (message = 'Test', err) => errorCode(999, message, err);
+const viero900 = ({ err, message = 'Client Aborted' }) => errorCode(900, message, err);
+const viero999 = ({ err, message = 'Test' }) => errorCode(999, message, err);
 
 module.exports = {
   VieroHttpError,

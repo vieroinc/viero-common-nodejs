@@ -54,7 +54,7 @@ class VieroEntryFilter extends VieroHTTPServerFilter {
     const { req, res } = params;
 
     if (req.httpVersion !== '1.1') {
-      return respondError(res, http400);
+      return respondError(res, http400());
     }
 
     req.body = null;
