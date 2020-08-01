@@ -17,10 +17,10 @@
   "scripts": {
     "clean": "rimraf dist",
     "reset": "npm run clean && rimraf node_modules",
-    "build": "npm run clean && babel src -d ./dist --source-maps inline",
-    "dist": "npm run build && copyfiles package.json README.md LICENSE.md dist",
     "lint": "eslint ./src",
-    "npmjs": "npm run lint && npm run dist && npm publish ./dist --access public"
+    "build": "npm run lint && npm run clean && babel src -d ./dist --source-maps inline",
+    "dist": "npm run build && copyfiles package.json README.md LICENSE.md dist",
+    "npmjs": "npm run dist && npm publish ./dist --access public"
   },
   "module": "./index.js",
   "dependencies": {
