@@ -65,20 +65,24 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
       path = path.slice(0, -1);
     }
     const pathComponents = path.split('/');
+    // eslint-disable-next-line no-param-reassign
     params.req.pathParams = {};
 
     let map = this._registry[params.req.method] || {};
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       const pathElement = pathComponents.shift();
       if (undefined === pathElement) {
         const cb = map['/'];
         if (cb && typeof cb === 'function') {
+          // eslint-disable-next-line no-param-reassign
           params.action = cb;
         }
         return chain.next();
       }
       if (map[pathElement]) {
         map = map[pathElement];
+        // eslint-disable-next-line no-continue
         continue;
       }
       const parametric = Object.keys(map).filter((it) => it.startsWith(':'));
@@ -92,6 +96,7 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
         return chain.next();
       }
       map = map[parametric[0]];
+      // eslint-disable-next-line no-param-reassign
       params.req.pathParams[parametric[0].slice(1)] = decodeURIComponent(pathElement);
     }
   }

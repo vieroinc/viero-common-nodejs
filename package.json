@@ -1,6 +1,6 @@
 {
   "name": "@viero/common-nodejs",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Common code specific to nodejs used by @vieroinc.",
   "homepage": "https://github.com/vieroinc/viero-common-nodejs",
   "contributors": [
@@ -24,17 +24,17 @@
   },
   "module": "./index.js",
   "dependencies": {
-    "@viero/common": "^1.5.0",
+    "@viero/common": "^1.5.2",
     "klaw": "^3.0.0",
     "lodash": "^4.17.19",
     "negotiator": "^0.6.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.5",
-    "@babel/core": "^7.10.5",
-    "@babel/preset-env": "^7.10.4",
+    "@babel/core": "^7.11.0",
+    "@babel/preset-env": "^7.11.0",
     "copyfiles": "^2.3.0",
-    "eslint": "^7.5.0",
+    "eslint": "^7.6.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
     "prettier": "^2.0.5",
