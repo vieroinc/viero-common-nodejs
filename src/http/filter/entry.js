@@ -71,8 +71,10 @@ class VieroEntryFilter extends VieroHTTPServerFilter {
     });
 
     if (req.headers['x-forwarded-for']) {
+      // eslint-disable-next-line no-param-reassign
       params.remoteAddress = req.headers['x-forwarded-for'];
     } else if (req.connection && req.connection.remoteAddress) {
+      // eslint-disable-next-line no-param-reassign
       params.remoteAddress = req.connection.remoteAddress;
     }
 

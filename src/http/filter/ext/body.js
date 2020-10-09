@@ -34,6 +34,7 @@ class VieroBodyFilter extends VieroHTTPServerFilter {
 
     return readBody(params.req)
       .then((payload) => {
+        // eslint-disable-next-line no-param-reassign
         params.req.body = (payload || null);
       })
       .then(() => {

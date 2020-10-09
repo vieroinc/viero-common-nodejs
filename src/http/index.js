@@ -56,7 +56,9 @@ class VieroHTTPServer {
    * Starts the server.
    */
   run({ host, port } = {}) {
+    // eslint-disable-next-line no-param-reassign
     port = port || 80;
+    // eslint-disable-next-line no-param-reassign
     host = host || '::';
     return new Promise((resolve, reject) => {
       this._server.on('error', (err) => reject(new VieroError('/http', 732561, { [VieroError.KEY.ERROR]: err })));
@@ -123,6 +125,7 @@ class VieroHTTPServer {
   registerRoute(method, path, cb, description) {
     this._routerFilter.registerRoute(method, path, cb);
     if (log.isDebug()) {
+      // eslint-disable-next-line no-param-reassign
       description = description ? ` // ${description}` : '';
       log.debug(`+ Route ${method.toUpperCase()}: ${path} ${description}`);
     }

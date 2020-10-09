@@ -14,10 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-export { VieroHTTPServer } from './http';
-
 export { VieroEventCenter, onEvent, emitEvent } from './event';
-
+export { VieroHTTPServer } from './http';
 export {
   DigestStream,
   jsonBody,
