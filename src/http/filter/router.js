@@ -14,11 +14,14 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+const { parse } = require('url');
 const { VieroError } = require('@viero/common/error');
 const { VieroLog } = require('@viero/common/log');
 const { VieroHTTPServerFilter } = require('./filter');
 
 const log = new VieroLog('http/filters/router');
+
+const pathElementRegex = new RegExp(/(.*?[/?])/);
 
 class VieroRouterFilter extends VieroHTTPServerFilter {
   constructor(server) {
@@ -57,22 +60,31 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
   run(params, chain) {
     super.run(params, chain);
 
-    let { path } = params.req;
+    const url = parse(params.req.url, true);
+    // eslint-disable-next-line no-param-reassign
+    params.req.pathParams = {};
+    // eslint-disable-next-line no-param-reassign
+    params.req.body = null;
+    // eslint-disable-next-line no-param-reassign
+    params.req.path = url.pathname;
+    // eslint-disable-next-line no-param-reassign
+    params.req.query = url.query;
+
+    let { path } = url;
     if (path.startsWith('/')) {
       path = path.slice(1);
     }
-    if (path.endsWith('/')) {
-      path = path.slice(0, -1);
-    }
-    const pathComponents = path.split('/');
-    // eslint-disable-next-line no-param-reassign
-    params.req.pathParams = {};
 
     let map = this._registry[params.req.method] || {};
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      const pathElement = pathComponents.shift();
-      if (undefined === pathElement) {
+      let pathElement = null;
+      path = path.replace(pathElementRegex, (replaced) => {
+        pathElement = replaced;
+        return '';
+      });
+      if (!pathElement) {
+        // TODO: check
         const cb = map['/'];
         if (cb && typeof cb === 'function') {
           // eslint-disable-next-line no-param-reassign
@@ -80,12 +92,16 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
         }
         return chain.next();
       }
+      if (pathElement.endsWith('/')) {
+        pathElement = pathElement.slice(0, -1);
+      }
       if (map[pathElement]) {
+        // TODO: check
         map = map[pathElement];
         // eslint-disable-next-line no-continue
         continue;
       }
-      const parametric = Object.keys(map).filter((it) => it.startsWith(':'));
+      let parametric = Object.keys(map).filter((it) => it.startsWith(':'));
       if (parametric.length < 1) {
         return chain.next();
       }
@@ -96,8 +112,17 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
         return chain.next();
       }
       map = map[parametric[0]];
-      // eslint-disable-next-line no-param-reassign
-      params.req.pathParams[parametric[0].slice(1)] = decodeURIComponent(pathElement);
+      parametric = parametric[0].slice(1);
+
+      if (parametric.endsWith('...')) {
+        pathElement = `${pathElement}/${path}`;
+        // eslint-disable-next-line no-param-reassign
+        params.req.pathParams[parametric.slice(0, -3)] = decodeURIComponent(pathElement);
+        path = '';
+      } else {
+        // eslint-disable-next-line no-param-reassign
+        params.req.pathParams[parametric] = decodeURIComponent(pathElement);
+      }
     }
   }
 }

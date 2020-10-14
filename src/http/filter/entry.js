@@ -14,7 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-const url = require('url');
 const { uuid } = require('@viero/common/uid');
 const { VieroHTTPServerFilter } = require('./filter');
 const { http400, http405 } = require('../error');
@@ -31,7 +30,13 @@ const setCORSHeadersIfNeeded = (self, req, res, options) => {
 
   try {
     const { hostname } = new URL(from);
-    if (options.origins.some((allowedOriginEnding) => hostname.endsWith(allowedOriginEnding))) { // TODO: seq read
+    if (
+      options.origns === 'any'
+      || (
+        options.origins.some
+        && options.origins.some((allowedOriginEnding) => hostname.endsWith(allowedOriginEnding)) // TODO: seq read
+      )
+    ) {
       res.setHeader('Access-Control-Allow-Origin', `${from}`);
       // eslint-disable-next-line no-underscore-dangle
       res.setHeader('Access-Control-Allow-Methods', self._server.allowedMethods.join(', '));
@@ -58,12 +63,6 @@ class VieroEntryFilter extends VieroHTTPServerFilter {
     if (req.httpVersion !== '1.1') {
       return respondError(res, http400());
     }
-
-    req.body = null;
-
-    const explodedUrl = url.parse(req.url, true);
-    req.path = explodedUrl.pathname;
-    req.query = explodedUrl.query;
 
     Object.assign(params, {
       at: Date.now(),
