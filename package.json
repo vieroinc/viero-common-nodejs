@@ -1,6 +1,6 @@
 {
   "name": "@viero/common-nodejs",
-  "version": "1.1.8",
+  "version": "1.2.0",
   "description": "Common code specific to nodejs used by @vieroinc.",
   "homepage": "https://github.com/vieroinc/viero-common-nodejs",
   "contributors": [
@@ -19,7 +19,9 @@
     "reset": "npm run clean && rimraf node_modules",
     "lint": "eslint ./src",
     "build": "npm run lint && npm run clean && babel src -d ./dist --source-maps inline",
+    "build-nolint": "npm run clean && babel src -d ./dist --source-maps inline",
     "dist": "npm run build && copyfiles package.json README.md LICENSE.md dist",
+    "dist-nolint": "npm run build-nolint && copyfiles package.json README.md LICENSE.md dist",
     "npmjs": "npm run dist && npm publish ./dist --access public"
   },
   "module": "./index.js",

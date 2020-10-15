@@ -15,7 +15,7 @@
  */
 
 const { VieroHTTPServerFilter } = require('../filter');
-const { jsonBody, formBody } = require('../../../utils/stream');
+const { jsonBody, formBody } = require('../../../../utils/stream');
 
 const readBody = (req) => {
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {

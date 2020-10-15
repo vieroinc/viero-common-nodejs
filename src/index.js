@@ -15,7 +15,8 @@
  */
 
 export { VieroEventCenter, onEvent, emitEvent } from './event';
-export { VieroHTTPServer } from './http';
+export { VieroHTTPServer } from './http/server';
+export { VieroHTTPClient } from './http/client';
 export {
   DigestStream,
   jsonBody,
