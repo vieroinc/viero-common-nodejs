@@ -39,6 +39,11 @@ class Parallel {
   static pool(name) {
     return pools[name];
   }
+
+  static terminate(name) {
+    // eslint-disable-next-line no-underscore-dangle
+    return pools[name]._terminate().then(() => delete pools[name]);
+  }
 }
 
 module.exports = { Parallel };

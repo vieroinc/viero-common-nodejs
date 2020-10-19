@@ -17,5 +17,5 @@
 const { parentPort } = require('worker_threads');
 
 parentPort.on('message', (msg) => {
-  setTimeout(() => parentPort.postMessage(msg), 5000);
+  setTimeout(() => parentPort.postMessage(msg.value), msg.wait);
 });

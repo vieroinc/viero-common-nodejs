@@ -61,7 +61,7 @@ class Pool {
   run(data) {
     const worker = findFreeWorker(this._workers)
       || addWorker(this._workers, this._options.scriptPath);
-    if (!worker) return new Promise((resolve) => this._queue.push({ data, resolve }));
+    if (!worker) return new Promise((resolve) => this._queue.push(resolve)).then(() => this.run(data));
     return new Promise((resolve, reject) => {
       worker.busy = true;
       const onExit = () => (this._terminating ? undefined : addMinWorkers(this._workers, this._options));
@@ -74,8 +74,8 @@ class Pool {
     })
       .then((res) => {
         worker.busy = false;
-        const item = this._queue.shift();
-        if (item) return item.resolve().then(() => this.run(item.data));
+        const resolve = this._queue.shift();
+        if (resolve) return resolve();
         return res;
       })
       .catch((err) => {
@@ -84,7 +84,7 @@ class Pool {
       });
   }
 
-  terminate() {
+  _terminate() {
     this._terminating = true;
     return Promise.all([...this._workers].reduce((acc, worker) => {
       acc.push(worker.native.terminate().then((res) => {
