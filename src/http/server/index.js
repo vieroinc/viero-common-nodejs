@@ -39,11 +39,11 @@ class VieroHTTPServer {
 
     this._server = http.createServer((req, res) => {
       new VieroFilterChain(req, res, [
-        this._entryFilter,
-        this._routerFilter,
-        ...this._filters,
-        this._actionFilter,
-        this._giveUpFilter,
+        this._entryFilter, // init request
+        this._routerFilter, // determines action
+        ...this._filters, // static, body or any custom filters on demand
+        this._actionFilter, // executes action
+        this._giveUpFilter, // upon reached 404
       ]).next();
     });
   }

@@ -21,7 +21,7 @@ const { VieroHTTPServerFilter } = require('./filter');
 
 const log = new VieroLog('http/filters/router');
 
-const pathElementRegex = new RegExp(/(.*?[/?])/);
+const PATH_ELEMENT_REGEX = new RegExp(/(?<current>^\/.*?)(?<remainder>[/?].*)?$/);
 
 class VieroRouterFilter extends VieroHTTPServerFilter {
   constructor(server) {
@@ -43,18 +43,26 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
       this._registry[methodUpperCase] = {};
     }
     let map = this._registry[methodUpperCase];
-    path.split('/').slice(1).forEach((pathComponent, idx, array) => {
-      let subMap = map[pathComponent];
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      if (path === null) {
+        break;
+      }
+      const match = path.match(PATH_ELEMENT_REGEX);
+      const { current: pathElement, remainder } = match.groups;
+      // eslint-disable-next-line no-param-reassign
+      path = remainder || null;
+      let subMap = map[pathElement];
       if (!subMap) {
         subMap = {};
-        map[pathComponent] = subMap;
+        map[pathElement] = subMap;
       }
       map = subMap;
-      if (idx === array.length - 1) {
+      if (path === null) {
         // TODO: TRACE pre- and post-action
-        map['/'] = (params) => Promise.resolve(cb(params)).then((result) => result);
+        map.action = (params) => Promise.resolve(cb(params)).then((result) => result);
       }
-    });
+    }
   }
 
   run(params, chain) {
@@ -71,58 +79,50 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
     params.req.query = url.query;
 
     let { path } = url;
-    if (path.startsWith('/')) {
-      path = path.slice(1);
-    }
-
-    let map = this._registry[params.req.method] || {};
+    let map = this._registry[params.req.method.toUpperCase()] || {};
     // eslint-disable-next-line no-constant-condition
     while (true) {
-      let pathElement = null;
-      path = path.replace(pathElementRegex, (replaced) => {
-        pathElement = replaced;
-        return '';
-      });
-      if (!pathElement) {
+      if (path === null) {
         // TODO: check
-        const cb = map['/'];
-        if (cb && typeof cb === 'function') {
+        if (map.action && typeof map.action === 'function') {
           // eslint-disable-next-line no-param-reassign
-          params.action = cb;
+          params.action = map.action;
         }
         return chain.next();
       }
-      if (pathElement.endsWith('/')) {
-        pathElement = pathElement.slice(0, -1);
+      const match = path.match(PATH_ELEMENT_REGEX);
+      if (!match) {
+        return chain.next();
       }
+      // eslint-disable-next-line prefer-const
+      let { current: pathElement, remainder } = match.groups;
       if (map[pathElement]) {
         // TODO: check
         map = map[pathElement];
-        // eslint-disable-next-line no-continue
-        continue;
-      }
-      let parametric = Object.keys(map).filter((it) => it.startsWith(':'));
-      if (parametric.length < 1) {
-        return chain.next();
-      }
-      if (parametric.length > 1) {
-        if (log.isError()) {
-          log.error(`Ambiguous paths registered: ${parametric.join(',')}, unable to route.`);
-        }
-        return chain.next();
-      }
-      map = map[parametric[0]];
-      parametric = parametric[0].slice(1);
-
-      if (parametric.endsWith('...')) {
-        pathElement = `${pathElement}/${path}`;
-        // eslint-disable-next-line no-param-reassign
-        params.req.pathParams[parametric.slice(0, -3)] = decodeURIComponent(pathElement);
-        path = '';
       } else {
-        // eslint-disable-next-line no-param-reassign
-        params.req.pathParams[parametric] = decodeURIComponent(pathElement);
+        let parametric = Object.keys(map).filter((it) => it.startsWith('/:'));
+        if (parametric.length < 1) {
+          return chain.next();
+        }
+        if (parametric.length > 1) {
+          if (log.isError()) {
+            log.error(`Ambiguous paths registered: ${parametric.join(',')}, unable to route.`);
+          }
+          return chain.next();
+        }
+        map = map[parametric[0]];
+        parametric = parametric[0].slice(2);
+
+        if (parametric.endsWith('...')) {
+          // eslint-disable-next-line no-param-reassign
+          params.req.pathParams[parametric.slice(0, -3)] = path.slice(1);
+          remainder = null;
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          params.req.pathParams[parametric] = decodeURIComponent(pathElement.slice(1));
+        }
       }
+      path = remainder || null;
     }
   }
 }
