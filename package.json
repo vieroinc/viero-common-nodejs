@@ -25,7 +25,7 @@
     "test": "npm run dist && mocha",
     "test:nolint": "npm run dist:nolint && mocha",
     "test:only": "mocha",
-    "npmjs": "npm run dist && npm publish ./dist --access public"
+    "npmjs": "npm run test && npm publish ./dist --access public"
   },
   "module": "./index.js",
   "dependencies": {
