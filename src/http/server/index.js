@@ -139,38 +139,59 @@ class VieroHTTPServer {
   }
 
   /**
-   * Convenience method to declare a GET.
+   * Convenience method to declare a GET request.
    */
   get(path, cb, description) {
-    return this.registerRoute('GET', path, cb, description);
+    return this.method('GET', path, cb, description);
   }
 
   /**
-   * Convenience method to declare a HEAD.
+   * Convenience method to declare a HEAD request.
    */
   head(path, cb, description) {
-    return this.registerRoute('HEAD', path, cb, description);
+    return this.method('HEAD', path, cb, description);
   }
 
   /**
-  * Convenience method to declare a POST.
+  * Convenience method to declare a POST request.
   */
   post(path, cb, description) {
-    return this.registerRoute('POST', path, cb, description);
+    return this.method('POST', path, cb, description);
   }
 
   /**
-  * Convenience method to declare a PUT.
+  * Convenience method to declare a PUT request.
   */
   put(path, cb, description) {
-    return this.registerRoute('PUT', path, cb, description);
+    return this.method('PUT', path, cb, description);
   }
 
   /**
-  * Convenience method to declare a DELETE.
+  * Convenience method to declare a DELETE request.
   */
   delete(path, cb, description) {
-    return this.registerRoute('DELETE', path, cb, description);
+    return this.method('DELETE', path, cb, description);
+  }
+
+  /**
+   * Convenience method to declare a request with the specified method.
+   */
+  method(method, path, cb, description) {
+    return this.registerRoute(method, path, cb, description);
+  }
+
+  /**
+   * Convenience method to declare methods grouped by the same path.
+   */
+  route(path) {
+    return {
+      get: (cb, description) => this.get(path, cb, description),
+      head: (cb, description) => this.head(path, cb, description),
+      post: (cb, description) => this.post(path, cb, description),
+      put: (cb, description) => this.put(path, cb, description),
+      delete: (cb, description) => this.delete(path, cb, description),
+      method: (method, cb, description) => this.method(method, path, cb, description),
+    };
   }
 }
 
