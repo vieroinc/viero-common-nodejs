@@ -21,7 +21,7 @@ const { VieroHTTPServerFilter } = require('./filter');
 
 const log = new VieroLog('http/filters/router');
 
-const PATH_ELEMENT_REGEX = new RegExp(/(?<current>^\/.*?)(?<remainder>[/?].*)?$/);
+const PATH_ELEMENT_REGEX = /(?<current>^\/.*?)(?<remainder>[/?].*)?$/;
 
 class VieroRouterFilter extends VieroHTTPServerFilter {
   constructor(server) {
