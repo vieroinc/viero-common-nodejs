@@ -1,6 +1,6 @@
 {
   "name": "@viero/common-nodejs",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "Common code specific to nodejs used by @vieroinc.",
   "homepage": "https://github.com/vieroinc/viero-common-nodejs",
   "contributors": [

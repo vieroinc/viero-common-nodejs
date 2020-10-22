@@ -167,6 +167,7 @@ class VieroStaticFilter extends VieroHTTPServerFilter {
     }
     // eslint-disable-next-line no-param-reassign
     params.action = (theParams) => this.serve(theParams, 200);
+    chain.next();
   }
 
   serve(params, statusCode, pathOverride) {
