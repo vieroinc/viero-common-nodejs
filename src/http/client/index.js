@@ -15,6 +15,7 @@
  */
 
 const http = require('http');
+const https = require('https');
 
 class VieroHTTPClient {
   /**
@@ -25,7 +26,8 @@ class VieroHTTPClient {
   static request(url, options = {}) {
     return new Promise((resolve, reject) => {
       let dataPromise = null;
-      const req = http.request(url, options, (res) => {
+      const cli = url.startsWith('https') ? https : http;
+      const req = cli.request(url, options, (res) => {
         dataPromise = new Promise((dataResolve, dataReject) => {
           const buffers = [];
           res.on('data', (buffer) => buffers.push(buffer));
