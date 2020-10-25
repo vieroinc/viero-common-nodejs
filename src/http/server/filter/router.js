@@ -31,42 +31,21 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
   }
 
   registerRoute(method, path, cb) {
-    if (!method || !path || !cb) {
-      throw new VieroError('/http/filters/registerRoute', 887375);
-    }
-    if (!path.startsWith('/')) {
-      throw new VieroError('/http/filters/registerRoute', 887376);
-    }
+    if (!method || !path || !cb) throw new VieroError('/http/filters/registerRoute', 887375);
+    if (!path.startsWith('/')) throw new VieroError('/http/filters/registerRoute', 887376);
     const methodUpperCase = method.toUpperCase();
     this._server.allowMethod(methodUpperCase);
-    if (!this._registry[methodUpperCase]) {
-      this._registry[methodUpperCase] = {};
-    }
+    if (!this._registry[methodUpperCase]) this._registry[methodUpperCase] = {};
     let map = this._registry[methodUpperCase];
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      if (path === null) {
-        break;
-      }
+    while (path !== null) {
       const match = path.match(PATH_ELEMENT_REGEX);
       const { current: pathElement, remainder } = match.groups;
-      let subMap = map[pathElement];
-      if (!subMap) {
-        subMap = {};
-        map[pathElement] = subMap;
-      }
-      map = subMap;
-      if (!remainder || remainder === '/' || remainder.startsWith('?')) {
-        // eslint-disable-next-line no-param-reassign
-        path = null;
-      } else {
-        // eslint-disable-next-line no-param-reassign
-        path = remainder;
-      }
-      if (path === null) {
-        // TODO: TRACE pre- and post-action
-        map.action = (params) => Promise.resolve(cb(params)).then((result) => result);
-      }
+      map[pathElement] = map[pathElement] || {};
+      map = map[pathElement];
+      // eslint-disable-next-line no-param-reassign
+      path = (!remainder || remainder === '/' || remainder.startsWith('?')) ? null : remainder;
+      // TODO: TRACE pre- and post-action
+      if (path === null) map.action = (params) => Promise.resolve(cb(params)).then((result) => result);
     }
   }
 
@@ -85,55 +64,33 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
 
     let { path } = url;
     let map = this._registry[params.req.method.toUpperCase()] || {};
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      if (path === null) {
-        // TODO: check
-        if (map.action && typeof map.action === 'function') {
-          // eslint-disable-next-line no-param-reassign
-          params.action = map.action;
-        }
-        return chain.next();
-      }
+    while (path !== null) {
       const match = path.match(PATH_ELEMENT_REGEX);
-      if (!match) {
-        return chain.next();
-      }
-      // eslint-disable-next-line prefer-const
-      let { current: pathElement, remainder } = match.groups;
-      if (map[pathElement]) {
-        // TODO: check
-        map = map[pathElement];
-      } else {
+      if (!match) return chain.next();
+      const { current: pathElement } = match.groups;
+      let { remainder } = match.groups;
+      if (map[pathElement]) map = map[pathElement];
+      else {
         let parametric = Object.keys(map).filter((it) => it.startsWith('/:'));
-        if (parametric.length < 1) {
-          return chain.next();
-        }
+        if (parametric.length < 1) return chain.next();
         if (parametric.length > 1) {
-          if (log.isError()) {
-            log.error(`Ambiguous paths registered: ${parametric.join(',')}, unable to route.`);
-          }
+          if (log.isError()) log.error(`Ambiguous paths registered: ${parametric.join(',')}, unable to route.`);
           return chain.next();
         }
         map = map[parametric[0]];
         parametric = parametric[0].slice(2);
-
         if (parametric.endsWith('...')) {
           // eslint-disable-next-line no-param-reassign
           params.req.pathParams[parametric.slice(0, -3)] = path.slice(1);
           remainder = null;
-        } else {
           // eslint-disable-next-line no-param-reassign
-          params.req.pathParams[parametric] = decodeURIComponent(pathElement.slice(1));
-        }
+        } else params.req.pathParams[parametric] = decodeURIComponent(pathElement.slice(1));
       }
-      if (!remainder || remainder === '/' || remainder.startsWith('?')) {
-        // eslint-disable-next-line no-param-reassign
-        path = null;
-      } else {
-        path = remainder;
-      }
+      path = (!remainder || remainder === '/' || remainder.startsWith('?')) ? null : remainder;
     }
+    // eslint-disable-next-line no-param-reassign
+    if (map.action && typeof map.action === 'function') params.action = map.action;
+    return chain.next();
   }
 }
 

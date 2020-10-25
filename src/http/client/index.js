@@ -16,6 +16,7 @@
 
 const http = require('http');
 const https = require('https');
+const { parseMime } = require('@viero/common/mime');
 
 class VieroHTTPClient {
   /**
@@ -26,6 +27,7 @@ class VieroHTTPClient {
   static request(url, options = {}) {
     return new Promise((resolve, reject) => {
       let dataPromise = null;
+      let contentPromise = null;
       const cli = url.startsWith('https') ? https : http;
       const req = cli.request(url, options, (res) => {
         dataPromise = new Promise((dataResolve, dataReject) => {
@@ -34,6 +36,14 @@ class VieroHTTPClient {
           res.on('end', () => dataResolve(Buffer.concat(buffers)));
           res.on('error', (err) => dataReject(err));
         });
+        contentPromise = (header) => dataPromise.then((buffer) => {
+          const mime = parseMime(header.headers['content-type']);
+          switch (mime.essence) {
+            case 'text/plain': return buffer.toString('utf8');
+            case 'application/json': return buffer.toJSON();
+            default: return buffer;
+          }
+        });
       });
       req.on('response', (message) => {
         const header = (({
@@ -41,7 +51,7 @@ class VieroHTTPClient {
         }) => ({
           headers, httpVersion, httpVersionMajor, httpVersionMinor, statusCode, statusMessage,
         }))(message);
-        resolve({ ...header, data: () => dataPromise });
+        resolve({ ...header, data: () => dataPromise, content: () => contentPromise(header) });
       });
       req.on('error', (err) => reject(err));
       if (options.body) req.write(options.body);
