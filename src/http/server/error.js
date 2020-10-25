@@ -25,7 +25,7 @@ class VieroHttpError extends VieroError {
   }
 
   get httpMessage() {
-    return this.get(VieroError.KEY.MESSAGE);
+    return this.get(HTTP_MESSAGE);
   }
 
   get httpCode() {
