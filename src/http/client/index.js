@@ -40,7 +40,7 @@ class VieroHTTPClient {
           const mime = parseMime(header.headers['content-type']);
           switch (mime.essence) {
             case 'text/plain': return buffer.toString('utf8');
-            case 'application/json': return buffer.toJSON();
+            case 'application/json': return JSON.parse(buffer.toString());
             default: return buffer;
           }
         });
