@@ -27,7 +27,7 @@ const {
   respond, respondOk, respondNotModified, respondError,
 } = require('../../respond');
 const { VieroThreads } = require('../../../../threads');
-const { http404 } = require('../../../../../../../zuuz.io/node_modules/@viero/common-nodejs/http/server/error');
+const { http404 } = require('../../error');
 
 const log = new VieroLog('VieroStaticFilter');
 
