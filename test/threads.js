@@ -17,35 +17,37 @@
 const path = require('path');
 const { expect } = require('chai');
 const { describe, it } = require('mocha');
-const { Parallel } = require('../src/parallel');
+const { VieroThreads } = require('../src/threads');
 
-const script = path.resolve('./test/parallel/echoNs.js');
+const script = path.resolve('./test/threads/echoNs.js');
 
 describe('/parallel', () => {
-  const pool5 = Parallel.createPool('/parallel/5', script, { min: 5 });
+  const pool5 = VieroThreads.createPool(script, { min: 5 });
   it('/parallel/5/allfound', () => {
-    expect(pool5.size === 5);
+    expect(pool5.size).to.equal(5);
   });
   const proms1 = [
     pool5.run({ value: '1', wait: 500 }),
     pool5.run({ value: '2', wait: 500 }),
   ];
   it('/parallel/5/3idles', () => {
-    expect(pool5.idle === 3);
+    expect(pool5.idle).to.equal(3);
   });
-  it('/parallel/5/12', (done) => {
-    Promise.all(proms1).then(() => Promise.all([
-      pool5.run({ value: 'one', wait: 0 }),
-      pool5.run({ value: 'two', wait: 0 }),
-    ])).then(([first, second]) => {
-      expect(first === 'one' && second === 'two');
-      done();
-      Parallel.terminate('/parallel/5');
-    });
+  it('/parallel/5/12', () => {
+    Promise.all(proms1)
+      .then(() => Promise.all([
+        pool5.run({ value: 'one', wait: 0 }),
+        pool5.run({ value: 'two', wait: 0 }),
+      ]))
+      .then(([first, second]) => {
+        expect(first).to.equal('one');
+        expect(second).to.equal('two');
+        VieroThreads.terminatePool(pool5);
+      });
   });
-  const pool2 = Parallel.createPool('/parallel/2', script, { min: 2, max: 2 });
+  const pool2 = VieroThreads.createPool(script, { min: 2, max: 2 });
   it('/parallel/2/2', () => {
-    expect(pool2.size === 2);
+    expect(pool2.size).to.equal(2);
   });
   const proms2 = [
     pool2.run({ value: '1', wait: 500 }),
@@ -53,14 +55,14 @@ describe('/parallel', () => {
     pool2.run({ value: '3', wait: 500 }),
   ];
   it('/parallel/2/1enqueued', () => {
-    expect(pool2.queued === 1);
-    // Parallel.terminate('/parallel/2');
+    expect(pool2.queued).to.equal(1);
   });
-  it('/parallel/2/123', (done) => {
+  it('/parallel/2/123', () => {
     Promise.all(proms2).then((res) => {
-      expect(res[0] === '1' && res[1] === '2' && res[2] === '3');
-      done();
-      Parallel.terminate('/parallel/2');
+      expect(res[0]).to.equal('1');
+      expect(res[1]).to.equal('2');
+      expect(res[2]).to.equal('3');
+      VieroThreads.terminatePool(pool2);
     });
   });
 });

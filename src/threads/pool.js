@@ -64,7 +64,7 @@ class VieroThreadPool {
 
   run(data) {
     const worker = findFreeWorker(this._workers) || addWorker(this._workers, this._options);
-    if (!worker) return new Promise((resolve) => this._queue.push(() => resolve().then(() => this.run(data))));
+    if (!worker) return new Promise((resolve) => this._queue.push(resolve)).then(() => this.run(data));
     return new Promise((resolve, reject) => {
       worker.busy = true;
       const onExit = () => (this._terminating ? undefined : addMinWorkers(this._workers, this._options));
