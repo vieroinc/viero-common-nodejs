@@ -55,6 +55,7 @@ const respondOk = (res, payload) => respond(res, 200, payload);
 const respondCreated = (res, payload) => respond(res, 201, payload);
 const respondNoContent = (res) => respond(res, 204);
 const respond2FARequired = (res) => respond(res, 250);
+const respondNotModified = (res) => respond(res, 304);
 const respondPartialContent = (res, payload) => respond(res, 406, payload);
 
 const respondForward = (res, url) => {
@@ -82,6 +83,7 @@ module.exports = {
   respondCreated,
   respondNoContent,
   respond2FARequired,
+  respondNotModified,
   respondPartialContent,
   respondForward,
   respondError,

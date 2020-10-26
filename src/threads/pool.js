@@ -36,7 +36,7 @@ const addMinWorkers = (workers, options) => {
 
 const removeWorker = (workers, worker) => workers.splice(workers.indexOf(worker), 1);
 
-class Pool {
+class VieroThreadPool {
   constructor(options) {
     this._queue = [];
     this._workers = [];
@@ -58,10 +58,13 @@ class Pool {
     return this._workers.length;
   }
 
+  get name() {
+    return this._options.name;
+  }
+
   run(data) {
-    const worker = findFreeWorker(this._workers)
-      || addWorker(this._workers, this._options.scriptPath);
-    if (!worker) return new Promise((resolve) => this._queue.push(resolve)).then(() => this.run(data));
+    const worker = findFreeWorker(this._workers) || addWorker(this._workers, this._options);
+    if (!worker) return new Promise((resolve) => this._queue.push(() => resolve().then(() => this.run(data))));
     return new Promise((resolve, reject) => {
       worker.busy = true;
       const onExit = () => (this._terminating ? undefined : addMinWorkers(this._workers, this._options));
@@ -74,8 +77,8 @@ class Pool {
     })
       .then((res) => {
         worker.busy = false;
-        const resolve = this._queue.shift();
-        if (resolve) return resolve();
+        const job = this._queue.shift();
+        if (job) job();
         return res;
       })
       .catch((err) => {
@@ -96,4 +99,4 @@ class Pool {
   }
 }
 
-module.exports = { Pool };
+module.exports = { VieroThreadPool };

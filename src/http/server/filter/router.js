@@ -34,7 +34,7 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
     if (!method || !path || !cb) throw new VieroError('/http/filters/registerRoute', 887375);
     if (!path.startsWith('/')) throw new VieroError('/http/filters/registerRoute', 887376);
     const methodUpperCase = method.toUpperCase();
-    this._server.allowMethod(methodUpperCase);
+    this.server.allowMethod(methodUpperCase);
     if (!this._registry[methodUpperCase]) this._registry[methodUpperCase] = {};
     let map = this._registry[methodUpperCase];
     while (path !== null) {

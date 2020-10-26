@@ -14,39 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-const { VieroError } = require('@viero/common/error');
+const { parentPort } = require('worker_threads');
+const { createHash } = require('crypto');
 
-class VieroHTTPServerFilter {
-  constructor(server, options) {
-    if (!server) {
-      throw new VieroError('VieroHTTPServerFilter', 303480);
-    }
-    this._server = server;
-    if (options) {
-      this.setup(options);
-    }
-  }
-
-  setup(options) {
-    if (!options) {
-      throw new VieroError('VieroHTTPServerFilter', 755624);
-    }
-    this._options = options;
-  }
-
-  get server() {
-    return this._server;
-  }
-
-  get options() {
-    return this._options;
-  }
-
-  run(params, chain) {
-    if (!params || !chain) {
-      throw new VieroError('VieroHTTPServerFilter', 143601);
-    }
-  }
-}
-
-module.exports = { VieroHTTPServerFilter };
+parentPort.on('message', (data) => {
+  const sum = createHash('sha256').update(data).digest('hex');
+  parentPort.postMessage(sum);
+});

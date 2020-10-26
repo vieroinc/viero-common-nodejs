@@ -22,12 +22,12 @@ class VieroGiveUpFilter extends VieroHTTPServerFilter {
   run(params, chain) {
     super.run(params, chain);
 
-    if (this._options) {
-      if (this._options.mime) {
-        return this._options.mime(params);
+    if (this.options) {
+      if (this.options.mime) {
+        return this.options.mime(params);
       }
-      if (this._options.default) {
-        return this._options.default(params);
+      if (this.options.default) {
+        return this.options.default(params);
       }
     }
     return respondError(params.res, http404());

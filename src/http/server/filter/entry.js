@@ -39,7 +39,7 @@ const setCORSHeadersIfNeeded = (self, req, res, options) => {
     ) {
       res.setHeader('Access-Control-Allow-Origin', `${from}`);
       // eslint-disable-next-line no-underscore-dangle
-      res.setHeader('Access-Control-Allow-Methods', self._server.allowedMethods.join(', '));
+      res.setHeader('Access-Control-Allow-Methods', self.server.allowedMethods.join(', '));
       if (options.headers) {
         res.setHeader('Access-Control-Allow-Headers', options.headers.join(', '));
       }
@@ -77,12 +77,12 @@ class VieroEntryFilter extends VieroHTTPServerFilter {
       params.remoteAddress = req.connection.remoteAddress;
     }
 
-    setCORSHeadersIfNeeded(this, params.req, params.res, this._options);
+    setCORSHeadersIfNeeded(this, params.req, params.res, this.options);
 
     if (req.method === 'OPTIONS') {
       return respondOk(res);
     }
-    const { allowedMethods } = this._server;
+    const { allowedMethods } = this.server;
     if (!allowedMethods.includes(req.method)) {
       res.setHeader('Allow', allowedMethods.join(', '));
       return respondError(res, http405());
