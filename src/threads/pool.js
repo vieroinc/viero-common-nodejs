@@ -67,12 +67,15 @@ class VieroThreadPool {
     if (!worker) return new Promise((resolve) => this._queue.push(resolve)).then(() => this.run(data));
     return new Promise((resolve, reject) => {
       worker.busy = true;
-      const onExit = () => (this._terminating ? undefined : addMinWorkers(this._workers, this._options));
-      const onError = (err) => reject(err);
-      const onMessage = (res) => resolve(res);
-      worker.native.on('error', onError);
-      worker.native.on('exit', onExit);
-      worker.native.on('message', onMessage);
+      if (worker.onExit) worker.native.off('exit', worker.onExit);
+      if (worker.onError) worker.native.off('error', worker.onError);
+      if (worker.onMessage) worker.native.off('message', worker.onMessage);
+      worker.onExit = () => this._workers.splice(this._workers.indexOf(worker), 1);
+      worker.onError = (err) => reject(err);
+      worker.onMessage = (res) => resolve(res);
+      worker.native.on('error', worker.onError);
+      worker.native.on('exit', worker.onExit);
+      worker.native.on('message', worker.onMessage);
       worker.native.postMessage(data);
     })
       .then((res) => {
