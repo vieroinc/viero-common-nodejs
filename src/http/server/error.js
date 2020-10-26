@@ -19,9 +19,9 @@ const { VieroError } = require('@viero/common/error');
 const HTTP_CODE = 'httpCode';
 const HTTP_MESSAGE = 'httpMessage';
 
-class VieroHttpError extends VieroError {
+class VieroHTTPError extends VieroError {
   constructor(code, message, userData) {
-    super('VieroHttpError', 846750, { ...userData, [HTTP_CODE]: code, [HTTP_MESSAGE]: message });
+    super('VieroHTTPError', 846750, { ...userData, [HTTP_CODE]: code, [HTTP_MESSAGE]: message });
   }
 
   get httpMessage() {
@@ -36,7 +36,7 @@ class VieroHttpError extends VieroError {
 /**
  * Creates an HTTP error. See convenience methods.
  */
-const errorCode = ({ code, message, userData } = {}) => new VieroHttpError(code, message, userData);
+const errorCode = ({ code, message, userData } = {}) => new VieroHTTPError(code, message, userData);
 
 /* HTTP 400- */
 const http400 = ({ message = 'Bad Request', userData } = {}) => errorCode({ code: 400, message, userData });
@@ -64,7 +64,7 @@ const viero900 = ({ message = 'Client Aborted', userData } = {}) => errorCode({ 
 const viero999 = ({ message = 'Test', userData } = {}) => errorCode({ code: 999, message, userData });
 
 module.exports = {
-  VieroHttpError,
+  VieroHTTPError,
   errorCode,
   http400,
   http401,
