@@ -37,6 +37,9 @@ class VieroHTTPClient {
           res.on('error', (err) => dataReject(err));
         });
         contentPromise = (header) => dataPromise.then((buffer) => {
+          if (!header.headers['content-type']) {
+            return buffer;
+          }
           const mime = parseMime(header.headers['content-type']);
           switch (mime.essence) {
             case 'text/plain': return buffer.toString('utf8');
