@@ -14,18 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-const cookieValue = (cookieString, key) => {
-  if (!cookieString) {
-    return undefined;
-  }
-  const keyPattern = `${key}=`;
-  const cookie = cookieString.split(';').find((it) => it.trim().indexOf(keyPattern) === 0);
-  if (cookie) {
-    return cookie.substring(keyPattern.length);
-  }
-  return null;
-};
+const { parse } = require('cookie');
 
 module.exports = {
-  cookieValue,
+  parse: (string) => parse(string),
 };
