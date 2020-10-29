@@ -17,5 +17,5 @@
 const { parse } = require('cookie');
 
 module.exports = {
-  parse: (string) => parse(string),
+  parseCookie: (string) => (string ? parse(string) : null),
 };
