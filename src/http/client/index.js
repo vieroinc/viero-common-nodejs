@@ -20,16 +20,16 @@ const { parseMime } = require('@viero/common/mime');
 
 class VieroHTTPClient {
   /**
-   *
-   * @param {*} url a string
-   * @param {*} options { timeout: <millis>, method: <string>, headers: <object>, body: <buffer> }
+   * Executes an asynchronous HTTP(S) request. Add body (<string> | <Buffer>) to the options if any.
+   * @param {*} options see https://nodejs.org/dist/latest-v14.x/docs/api/http.html#http_http_request_options_callback
    */
-  static request(url, options = {}) {
+  static request(options = {}) {
     return new Promise((resolve, reject) => {
       let dataPromise = null;
       let contentPromise = null;
-      const cli = url.startsWith('https') ? https : http;
-      const req = cli.request(url, options, (res) => {
+      const cli = options.url.startsWith('https') ? https : http;
+      const { body, ...rest } = options;
+      const req = cli.request(rest, (res) => {
         dataPromise = new Promise((dataResolve, dataReject) => {
           const buffers = [];
           res.on('data', (buffer) => buffers.push(buffer));
@@ -57,8 +57,7 @@ class VieroHTTPClient {
         resolve({ ...header, data: () => dataPromise, content: () => contentPromise(header) });
       });
       req.on('error', (err) => reject(err));
-      if (options.body) req.write(options.body);
-      req.end();
+      req.end(body);
     });
   }
 }
