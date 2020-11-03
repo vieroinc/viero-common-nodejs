@@ -27,8 +27,8 @@ class VieroHTTPClient {
     return new Promise((resolve, reject) => {
       let dataPromise = null;
       let contentPromise = null;
-      const cli = options.url.startsWith('https') ? https : http;
-      const { body, ...rest } = options;
+      const { body, url, ...rest } = options;
+      const cli = url.startsWith('https') ? https : http;
       const req = cli.request(rest, (res) => {
         dataPromise = new Promise((dataResolve, dataReject) => {
           const buffers = [];
