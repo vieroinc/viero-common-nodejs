@@ -122,8 +122,8 @@ class VieroHTTPServer {
   /**
    * Registers a route. See convenience methods for the most common methods.
    */
-  registerRoute(method, path, cb, description) {
-    this._routerFilter.registerRoute(method, path, cb);
+  registerRoute(method, path, cb, { params, description }) {
+    this._routerFilter.registerRoute(method, path, cb, params);
     if (log.isDebug()) {
       // eslint-disable-next-line no-param-reassign
       description = description ? ` // ${description}` : '';
@@ -141,43 +141,43 @@ class VieroHTTPServer {
   /**
    * Convenience method to declare a GET request.
    */
-  get(path, cb, description) {
-    return this.method('GET', path, cb, description);
+  get(path, cb, { params, description }) {
+    return this.method('GET', path, cb, { params, description });
   }
 
   /**
    * Convenience method to declare a HEAD request.
    */
-  head(path, cb, description) {
-    return this.method('HEAD', path, cb, description);
+  head(path, cb, { params, description }) {
+    return this.method('HEAD', path, cb, { params, description });
   }
 
   /**
   * Convenience method to declare a POST request.
   */
-  post(path, cb, description) {
-    return this.method('POST', path, cb, description);
+  post(path, cb, { params, description }) {
+    return this.method('POST', path, cb, { params, description });
   }
 
   /**
   * Convenience method to declare a PUT request.
   */
-  put(path, cb, description) {
-    return this.method('PUT', path, cb, description);
+  put(path, cb, { params, description }) {
+    return this.method('PUT', path, cb, { params, description });
   }
 
   /**
   * Convenience method to declare a DELETE request.
   */
-  delete(path, cb, description) {
-    return this.method('DELETE', path, cb, description);
+  delete(path, cb, { params, description }) {
+    return this.method('DELETE', path, cb, { params, description });
   }
 
   /**
    * Convenience method to declare a request with the specified method.
    */
-  method(method, path, cb, description) {
-    return this.registerRoute(method, path, cb, description);
+  method(method, path, cb, { params, description }) {
+    return this.registerRoute(method, path, cb, { params, description });
   }
 
   /**
@@ -185,12 +185,12 @@ class VieroHTTPServer {
    */
   route(path) {
     return {
-      get: (cb, description) => this.get(path, cb, description),
-      head: (cb, description) => this.head(path, cb, description),
-      post: (cb, description) => this.post(path, cb, description),
-      put: (cb, description) => this.put(path, cb, description),
-      delete: (cb, description) => this.delete(path, cb, description),
-      method: (method, cb, description) => this.method(method, path, cb, description),
+      get: (cb, { params, description }) => this.get(path, cb, { params, description }),
+      head: (cb, { params, description }) => this.head(path, cb, { params, description }),
+      post: (cb, { params, description }) => this.post(path, cb, { params, description }),
+      put: (cb, { params, description }) => this.put(path, cb, { params, description }),
+      delete: (cb, { params, description }) => this.delete(path, cb, { params, description }),
+      method: (method, cb, { params, description }) => this.method(method, path, cb, { params, description }),
     };
   }
 }

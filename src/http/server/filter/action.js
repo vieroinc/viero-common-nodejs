@@ -20,8 +20,8 @@ class VieroActionFilter extends VieroHTTPServerFilter {
   run(params, chain) {
     super.run(params, chain);
 
-    if (params.action) {
-      return params.action(params);
+    if (params.action && params.action.run) {
+      return params.action.run(params);
     }
     return chain.next();
   }

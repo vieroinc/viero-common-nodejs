@@ -54,8 +54,16 @@ paths.forEach((path) => router.registerRoute(method, path.original, (params) => 
 }));
 
 const run = (path) => {
-  const params = { req: { method, url: path }, action: () => { result = 'no match'; } };
-  router.run(params, { next() { params.action(params); } });
+  const params = {
+    req: { method, url: path },
+    action: {
+      run: () => {
+        result = 'no match';
+      },
+      params: undefined,
+    },
+  };
+  router.run(params, { next() { params.action.run(params); } });
 };
 
 describe('/http/server/filter/router', () => {

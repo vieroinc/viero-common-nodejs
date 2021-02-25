@@ -30,7 +30,7 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
     this._registry = {};
   }
 
-  registerRoute(method, path, cb) {
+  registerRoute(method, path, cb, params) {
     if (!method || !path || !cb) throw new VieroError('/http/filters/registerRoute', 887375);
     if (!path.startsWith('/')) throw new VieroError('/http/filters/registerRoute', 887376);
     const methodUpperCase = method.toUpperCase();
@@ -45,7 +45,12 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
       // eslint-disable-next-line no-param-reassign
       path = (!remainder || remainder === '/' || remainder.startsWith('?')) ? null : remainder;
       // TODO: TRACE pre- and post-action
-      if (path === null) map.action = (params) => Promise.resolve(cb(params)).then((result) => result);
+      if (path === null) {
+        map.action = {
+          run: (payload) => Promise.resolve(cb(payload)).then((result) => result),
+          params,
+        };
+      }
     }
   }
 
@@ -89,7 +94,7 @@ class VieroRouterFilter extends VieroHTTPServerFilter {
       path = (!remainder || remainder === '/' || remainder.startsWith('?')) ? null : remainder;
     }
     // eslint-disable-next-line no-param-reassign
-    if (map.action && typeof map.action === 'function') params.action = map.action;
+    if (map.action && map.action.run) params.action = map.action;
     return chain.next();
   }
 }
