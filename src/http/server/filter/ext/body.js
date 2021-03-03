@@ -14,15 +14,19 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+const { parseMime } = require('@viero/common/mime');
 const { VieroHTTPServerFilter } = require('../filter');
 const { jsonBody, formBody } = require('../../../../utils/stream');
 
 const readBody = (req) => {
   if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
-    switch (req.headers['content-type']) {
-      case 'application/json': return jsonBody(req);
-      case 'application/x-www-form-urlencoded': return formBody(req);
-      default: break;
+    if (req.headers['content-type']) {
+      const parsed = parseMime(req.headers['content-type']);
+      switch (parsed.essence) {
+        case 'application/json': return jsonBody(req);
+        case 'application/x-www-form-urlencoded': return formBody(req);
+        default: break;
+      }
     }
   }
   return Promise.resolve();
