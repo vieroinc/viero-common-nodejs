@@ -31,7 +31,7 @@ const setCORSHeadersIfNeeded = (self, req, res, options) => {
   try {
     const { hostname } = new URL(from);
     if (
-      options.origns === 'any'
+      options.origins === 'any'
       || (
         options.origins.some
         && options.origins.some((allowedOriginEnding) => hostname.endsWith(allowedOriginEnding)) // TODO: seq read
