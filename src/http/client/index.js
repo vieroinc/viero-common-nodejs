@@ -21,22 +21,24 @@ const { parseMime } = require('@viero/common/mime');
 class VieroHTTPClient {
   /**
    * Executes an asynchronous HTTP(S) request. Add body (<string> | <Buffer>) to the options if any.
-   * @param {*} options see https://nodejs.org/dist/latest-v14.x/docs/api/http.html#http_http_request_options_callback
+   * @param {*} options see https://nodejs.org/dist/latest-v16.x/docs/api/http.html#httprequesturl-options-callback
    */
   static request(options = {}) {
     return new Promise((resolve, reject) => {
-      let dataPromise = null;
-      let contentPromise = null;
+      let data = null;
+      let content = null;
+      let incomingMessage = null;
       const { body, url, ...rest } = options;
       const cli = url.startsWith('https') ? https : http;
       const req = cli.request(url, rest, (res) => {
-        dataPromise = new Promise((dataResolve, dataReject) => {
+        incomingMessage = res;
+        data = () => new Promise((dataResolve, dataReject) => {
           const buffers = [];
           res.on('data', (buffer) => buffers.push(buffer));
           res.on('end', () => dataResolve(Buffer.concat(buffers)));
           res.on('error', (err) => dataReject(err));
         });
-        contentPromise = (header) => dataPromise.then((buffer) => {
+        content = (header) => data().then((buffer) => {
           if (!header.headers['content-type']) {
             return buffer;
           }
@@ -54,7 +56,9 @@ class VieroHTTPClient {
         }) => ({
           headers, httpVersion, httpVersionMajor, httpVersionMinor, statusCode, statusMessage,
         }))(message);
-        resolve({ ...header, data: () => dataPromise, content: () => contentPromise(header) });
+        resolve({
+          ...header, data, content, incomingMessage,
+        });
       });
       req.on('error', (err) => reject(err));
       req.end(body);
